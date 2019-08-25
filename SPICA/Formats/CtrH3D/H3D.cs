@@ -238,7 +238,11 @@ namespace SPICA.Formats.CtrH3D
                 {
                     //Note: The IF is a workaround for multiple models with same material names.
                     //This kind of problem doesn't happen on BCH, but may happen on converted formats.
-                    if (!Materials.Contains(Material.Name)) Materials.Add(Material.MaterialParams);
+                    if (!Materials.Contains(Material.Name))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Adding " + Material.Name);
+                        Materials.Add(Material.MaterialParams);
+                    }
                 }
             }
         }

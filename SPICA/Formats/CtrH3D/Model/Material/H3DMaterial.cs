@@ -164,6 +164,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
+            //Name = Name + "_material";
             //The original tool seems to add those (usually unused) names with the silhouette suffix
             Serializer.Sections[(uint)H3DSectionId.Strings].Values.Add(new RefValue()
             {

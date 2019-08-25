@@ -94,6 +94,7 @@ namespace SPICA.Rendering
         {
             foreach (H3DTexture Texture in Textures)
             {
+                if (this.Textures.ContainsKey(Texture.Name)) continue;
                 this.Textures.Add(Texture.Name, new Texture(Texture));
             }
         }

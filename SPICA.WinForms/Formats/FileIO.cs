@@ -30,10 +30,13 @@ namespace SPICA.WinForms.Formats
 
                 if (Scene.Models.Count > 0) Skeleton = Scene.Models[0].Skeleton;
 
-                H3D Data = FormatIdentifier.IdentifyAndOpen(FileName, Skeleton);
+                H3D Data = FormatIdentifier.IdentifyAndOpen(FileName, Scene, Skeleton);
 
                 if (Data != null)
                 {
+                    Scene.Materials.Clear();
+                    Scene.Textures.Clear();
+
                     Scene.Merge(Data);
 
                     Renderer.Merge(Data);

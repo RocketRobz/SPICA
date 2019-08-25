@@ -17,24 +17,26 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
     public class OBJ
     {
         private string MtlFile;
+        private H3D scene;
 
         List<OBJMesh> Meshes;
 
-        public OBJ(string FileName)
+        public OBJ(string FileName, H3D scene)
         {
             using (FileStream FS = new FileStream(FileName, FileMode.Open))
             {
-                OBJModelImpl(FS);
+                OBJModelImpl(FS, scene);
             }
         }
 
-        public OBJ(Stream Stream)
+        public OBJ(Stream Stream, H3D scene)
         {
-            OBJModelImpl(Stream);
+            OBJModelImpl(Stream, scene);
         }
 
-        private void OBJModelImpl(Stream Stream)
+        private void OBJModelImpl(Stream Stream, H3D scene)
         {
+            this.scene = scene;
             Meshes = new List<OBJMesh>();
 
             List<Vector4> Positions = new List<Vector4>();
@@ -228,7 +230,7 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
                                     if (File.Exists(TextureFile) && !Output.Textures.Contains(TextureName))
                                     {
-                                        Output.Textures.Add(new H3DTexture(TextureFile));
+                                       Output.Textures.Add(new H3DTexture(TextureFile));
                                     }
 
                                     Material.DiffuseTexture = Path.GetFileNameWithoutExtension(TextureName);
@@ -264,21 +266,23 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                     }
                 }
             }
+            H3DModel Model = scene.Models[0];
+            Model.ClearMeshes();
+            Model.Materials.Clear();
 
-            H3DModel Model = new H3DModel();
-
-            Model.Name = "Model";
+            Model.Name = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
 
             ushort MaterialIndex = 0;
 
-            Model.Flags       = H3DModelFlags.HasSkeleton;
+            /*Model.Flags       = H3DModelFlags.HasSkeleton;
             Model.BoneScaling = H3DBoneScaling.Maya;
-            Model.MeshNodesVisibility.Add(true);
+            Model.MeshNodesVisibility.Add(true);*/
 
             float Height = 0;
 
             foreach (OBJMesh Mesh in Meshes)
             {
+                System.Diagnostics.Debug.WriteLine("reading mat");
                 Vector3 MinVector = new Vector3();
                 Vector3 MaxVector = new Vector3();
 
@@ -327,8 +331,8 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                     H3DSubMesh SM = new H3DSubMesh();
 
                     SM.BoneIndices = new ushort[] { 0 };
-                    SM.Skinning    = H3DSubMeshSkinning.Smooth;
-                    SM.Indices     = Indices.ToArray();
+                    SM.Skinning = H3DSubMeshSkinning.Smooth;
+                    SM.Indices = Indices.ToArray();
 
                     SubMeshes.Add(SM);
                 }
@@ -344,8 +348,8 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
                 H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
                 {
-                    Skinning      = H3DMeshSkinning.Smooth,
-                    MeshCenter    = (MinVector + MaxVector) * 0.5f,
+                    Skinning = H3DMeshSkinning.Smooth,
+                    MeshCenter = (MinVector + MaxVector) * 0.5f,
                     MaterialIndex = MaterialIndex
                 };
 
@@ -355,12 +359,13 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                 //Material
                 string MatName = $"Mat{MaterialIndex++.ToString("D5")}_{Mesh.MaterialName}";
 
-                H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, MatName, null);
+                H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, Mesh.MaterialName, null);
 
-                if (Materials.ContainsKey(Mesh.MaterialName))
-                    Material.Texture0Name = Materials[Mesh.MaterialName].DiffuseTexture;
-                else
-                    Material.Texture0Name = "NoTexture";
+                Material.Texture0Name = Materials[Mesh.MaterialName].DiffuseTexture;
+                System.Diagnostics.Debug.WriteLine(Material.Name);
+                Material.MaterialParams.AlphaTest.Enabled = true;
+                Material.MaterialParams.AlphaTest.Function = PICATestFunc.Greater;
+                Material.TextureMappers[0].MagFilter = H3DTextureMagFilter.Nearest;
 
                 Model.Materials.Add(Material);
 
@@ -374,14 +379,16 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
              * characters around, and all rigged bones are parented to this bone.
              * It's usually the Waist bone, that points upward and is half the character height.
              */
-            Model.Skeleton.Add(new H3DBone(
+            /*Model.Skeleton.Add(new H3DBone(
                 new Vector3(0, Height * 0.5f, 0),
                 new Vector3(0, 0, (float)(Math.PI * 0.5)),
                 Vector3.One,
                 "Waist",
-                -1));
+                -1));*/
 
-            Model.Skeleton[0].CalculateTransform(Model.Skeleton);
+            //Model.Skeleton[0].CalculateTransform(Model.Skeleton);
+
+            scene.Models.Clear();
 
             Output.Models.Add(Model);
 

@@ -31,9 +31,10 @@ namespace SPICA.WinForms
         private GridLines      UIGrid;
         private AxisLines      UIAxis;
         private AnimationGroup AnimGrp;
-        private H3D            Scene;
+        public H3D            Scene;
         private Renderer       Renderer;
         private Shader         Shader;
+        public static Boolean norender = false;
 
         private float Dimension;
 
@@ -79,6 +80,8 @@ namespace SPICA.WinForms
         
         private void FileOpen(string[] Files, bool MergeMode)
         {
+            System.Diagnostics.Debug.WriteLine("open");
+            norender = true;
             if (!MergeMode)
             {
                 Renderer.DeleteAll();
@@ -258,7 +261,10 @@ namespace SPICA.WinForms
 
             foreach (int i in ModelsList.SelectedIndices)
             {
-                Renderer.Models[i].Render();
+                if (!norender)
+                {
+                    Renderer.Models[i].Render();
+                }
             }
 
             UIAxis.Render();
@@ -324,6 +330,7 @@ namespace SPICA.WinForms
 
         private void TBtnShowGrid_Click(object sender, EventArgs e)
         {
+            norender = false;
             ToggleGrid();
         }
 
