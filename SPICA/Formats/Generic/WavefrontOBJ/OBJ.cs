@@ -25,140 +25,147 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
         {
             using (FileStream FS = new FileStream(FileName, FileMode.Open))
             {
-                OBJModelImpl(FS, scene);
+                textureOnlyFile = FileName;
+                OBJModelImpl(FS, scene, FileName.EndsWith(".mtl"));
             }
         }
 
         public OBJ(Stream Stream, H3D scene)
         {
-            OBJModelImpl(Stream, scene);
+            OBJModelImpl(Stream, scene, false);
         }
 
-        private void OBJModelImpl(Stream Stream, H3D scene)
+        public Boolean textureOnly = false;
+        public String textureOnlyFile;
+
+        private void OBJModelImpl(Stream Stream, H3D scene, Boolean textureOnly)
         {
+            this.textureOnly = textureOnly;
             this.scene = scene;
-            Meshes = new List<OBJMesh>();
-
-            List<Vector4> Positions = new List<Vector4>();
-            List<Vector4> Normals   = new List<Vector4>();
-            List<Vector4> TexCoords = new List<Vector4>();
-
-            OBJMesh Mesh = new OBJMesh();
-
-            TextReader Reader = new StreamReader(Stream);
-
-            for (string Line; (Line = Reader.ReadLine()) != null;)
+            if (!textureOnly)
             {
-                string[] Params = Line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                Meshes = new List<OBJMesh>();
 
-                if (Params.Length == 0) continue;
+                List<Vector4> Positions = new List<Vector4>();
+                List<Vector4> Normals = new List<Vector4>();
+                List<Vector4> TexCoords = new List<Vector4>();
 
-                switch (Params[0])
+                OBJMesh Mesh = new OBJMesh();
+
+                TextReader Reader = new StreamReader(Stream);
+
+                for (string Line; (Line = Reader.ReadLine()) != null;)
                 {
-                    case "v":
-                    case "vn":
-                        if (Params.Length >= 4)
-                        {
-                            (Params[0] == "v"
-                                ? Positions
-                                : Normals)
-                                .Add(new Vector4()
+                    string[] Params = Line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (Params.Length == 0) continue;
+
+                    switch (Params[0])
+                    {
+                        case "v":
+                        case "vn":
+                            if (Params.Length >= 4)
+                            {
+                                (Params[0] == "v"
+                                    ? Positions
+                                    : Normals)
+                                    .Add(new Vector4()
+                                    {
+                                        X = float.Parse(Params[1], CultureInfo.InvariantCulture),
+                                        Y = float.Parse(Params[2], CultureInfo.InvariantCulture),
+                                        Z = float.Parse(Params[3], CultureInfo.InvariantCulture)
+                                    });
+                            }
+                            break;
+
+                        case "vt":
+                            if (Params.Length >= 3)
+                            {
+                                TexCoords.Add(new Vector4()
                                 {
                                     X = float.Parse(Params[1], CultureInfo.InvariantCulture),
-                                    Y = float.Parse(Params[2], CultureInfo.InvariantCulture),
-                                    Z = float.Parse(Params[3], CultureInfo.InvariantCulture)
+                                    Y = float.Parse(Params[2], CultureInfo.InvariantCulture)
                                 });
-                        }
-                        break;
+                            }
+                            break;
 
-                    case "vt":
-                        if (Params.Length >= 3)
-                        {
-                            TexCoords.Add(new Vector4()
+                        case "f":
+                            string[][] Indices = new string[Params.Length - 1][];
+
+                            for (int Index = 0; Index < Params.Length - 1; Index++)
                             {
-                                X = float.Parse(Params[1], CultureInfo.InvariantCulture),
-                                Y = float.Parse(Params[2], CultureInfo.InvariantCulture)
-                            });
-                        }
-                        break;
-
-                    case "f":
-                        string[][] Indices = new string[Params.Length - 1][];
-
-                        for (int Index = 0; Index < Params.Length - 1; Index++)
-                        {
-                            Indices[Index] = Params[Index + 1].Split('/');
-                        }
-
-                        for (int Index = 0; Index < Indices.Length; Index++)
-                        {
-                            if (Index > 2)
-                            {
-                                Mesh.Vertices.Add(Mesh.Vertices[Mesh.Vertices.Count - 3]);
-                                Mesh.Vertices.Add(Mesh.Vertices[Mesh.Vertices.Count - 2]);
+                                Indices[Index] = Params[Index + 1].Split('/');
                             }
 
-                            PICAVertex Vertex = new PICAVertex();
-
-                            if (Indices[Index].Length > 0 && Indices[Index][0] != string.Empty)
+                            for (int Index = 0; Index < Indices.Length; Index++)
                             {
-                                Mesh.HasPosition = true;
+                                if (Index > 2)
+                                {
+                                    Mesh.Vertices.Add(Mesh.Vertices[Mesh.Vertices.Count - 3]);
+                                    Mesh.Vertices.Add(Mesh.Vertices[Mesh.Vertices.Count - 2]);
+                                }
 
-                                Vertex.Position = Positions[GetIndex(Indices[Index][0], Positions.Count)];
+                                PICAVertex Vertex = new PICAVertex();
+
+                                if (Indices[Index].Length > 0 && Indices[Index][0] != string.Empty)
+                                {
+                                    Mesh.HasPosition = true;
+
+                                    Vertex.Position = Positions[GetIndex(Indices[Index][0], Positions.Count)];
+                                }
+
+                                if (Indices[Index].Length > 1 && Indices[Index][1] != string.Empty)
+                                {
+                                    Mesh.HasTexCoord = true;
+
+                                    Vertex.TexCoord0 = TexCoords[GetIndex(Indices[Index][1], Normals.Count)];
+                                }
+
+                                if (Indices[Index].Length > 2 && Indices[Index][2] != string.Empty)
+                                {
+                                    Mesh.HasNormal = true;
+
+                                    Vertex.Normal = Normals[GetIndex(Indices[Index][2], TexCoords.Count)];
+                                }
+
+                                Vertex.Weights[0] = 1;
+
+                                Vertex.Color = Vector4.One;
+
+                                Mesh.Vertices.Add(Vertex);
                             }
+                            break;
 
-                            if (Indices[Index].Length > 1 && Indices[Index][1] != string.Empty)
+                        case "usemtl":
+                            if (Params.Length > 1)
                             {
-                                Mesh.HasTexCoord = true;
+                                string MaterialName = Line.Substring(Line.IndexOf(" ")).Trim();
 
-                                Vertex.TexCoord0 = TexCoords[GetIndex(Indices[Index][1], Normals.Count)];
+                                if (Mesh.Vertices.Count > 0)
+                                {
+                                    Meshes.Add(Mesh);
+
+                                    Mesh = new OBJMesh(MaterialName);
+                                }
+                                else
+                                {
+                                    Mesh.MaterialName = MaterialName;
+                                }
                             }
+                            break;
 
-                            if (Indices[Index].Length > 2 && Indices[Index][2] != string.Empty)
+                        case "mtllib":
+                            string MtlLibName = Line.Substring(Line.IndexOf(" ")).Trim();
+
+                            if (Params.Length > 1)
                             {
-                                Mesh.HasNormal = true;
-
-                                Vertex.Normal = Normals[GetIndex(Indices[Index][2], TexCoords.Count)];
+                                MtlFile = MtlLibName;
                             }
-                            
-                            Vertex.Weights[0] = 1;
-
-                            Vertex.Color = Vector4.One;
-
-                            Mesh.Vertices.Add(Vertex);
-                        }
-                        break;
-
-                    case "usemtl":
-                        if (Params.Length > 1)
-                        {
-                            string MaterialName = Line.Substring(Line.IndexOf(" ")).Trim();
-
-                            if (Mesh.Vertices.Count > 0)
-                            {
-                                Meshes.Add(Mesh);
-
-                                Mesh = new OBJMesh(MaterialName);
-                            }
-                            else
-                            {
-                                Mesh.MaterialName = MaterialName;
-                            }
-                        }
-                        break;
-
-                    case "mtllib":
-                        string MtlLibName = Line.Substring(Line.IndexOf(" ")).Trim();
-
-                        if (Params.Length > 1)
-                        {
-                            MtlFile = MtlLibName;
-                        }
-                        break;
+                            break;
+                    }
                 }
+                if (Mesh.Vertices.Count > 0) Meshes.Add(Mesh);
             }
-
-            if (Mesh.Vertices.Count > 0) Meshes.Add(Mesh);
         }
 
         private int GetIndex(string Value, int Count)
@@ -177,10 +184,10 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
             public Vector4 Diffuse;
             public Vector4 Specular;
 
-            public string DiffuseTexture; 
+            public string DiffuseTexture;
         }
 
-        public H3D ToH3D(string TextureAndMtlSearchPath = null)
+        public H3D ToH3D(string TextureAndMtlSearchPath = null, bool noTextures = false)
         {
             H3D Output = new H3D();
 
@@ -188,15 +195,26 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
             if (TextureAndMtlSearchPath != null)
             {
-                string MaterialFile = Path.Combine(TextureAndMtlSearchPath, MtlFile);
+                TextReader Reader = null;
+                if (textureOnly)
+                {
+                    Reader = new StreamReader(textureOnlyFile);
+                }
+                else
+                {
+                    string MaterialFile = Path.Combine(TextureAndMtlSearchPath, MtlFile);
 
-                if (File.Exists(MaterialFile))
+                    if (File.Exists(MaterialFile))
+                    {
+                        Reader = new StreamReader(MaterialFile);
+                    }
+
+                }
+                if (Reader != null)
                 {
                     string MaterialName = null;
 
                     OBJMaterial Material = default(OBJMaterial);
-
-                    TextReader Reader = new StreamReader(MaterialFile);
 
                     for (string Line; (Line = Reader.ReadLine()) != null;)
                     {
@@ -228,9 +246,9 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                                     string TextureFile = Path.Combine(TextureAndMtlSearchPath, Name);
                                     string TextureName = Path.GetFileNameWithoutExtension(TextureFile);
 
-                                    if (File.Exists(TextureFile) && !Output.Textures.Contains(TextureName))
+                                    if (File.Exists(TextureFile) && !Output.Textures.Contains(TextureName) && !noTextures)
                                     {
-                                       Output.Textures.Add(new H3DTexture(TextureFile));
+                                        Output.Textures.Add(new H3DTexture(TextureFile));
                                     }
 
                                     Material.DiffuseTexture = Path.GetFileNameWithoutExtension(TextureName);
@@ -249,8 +267,8 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
                                     switch (Params[0])
                                     {
-                                        case "Ka": Material.Ambient  = Color; break;
-                                        case "Kd": Material.Diffuse  = Color; break;
+                                        case "Ka": Material.Ambient = Color; break;
+                                        case "Kd": Material.Diffuse = Color; break;
                                         case "Ks": Material.Specular = Color; break;
                                     }
                                 }
@@ -260,139 +278,150 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
                     Reader.Dispose();
 
-                    if (MaterialName != null && Material.DiffuseTexture != null)
+                    if (MaterialName != null && Material.DiffuseTexture != null && !textureOnly)
                     {
                         Materials.Add(MaterialName, Material);
                     }
                 }
             }
-            H3DModel Model = scene.Models[0];
-            Model.ClearMeshes();
-            Model.Materials.Clear();
-
-            Model.Name = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
-
-            ushort MaterialIndex = 0;
-
-            /*Model.Flags       = H3DModelFlags.HasSkeleton;
-            Model.BoneScaling = H3DBoneScaling.Maya;
-            Model.MeshNodesVisibility.Add(true);*/
-
-            float Height = 0;
-
-            foreach (OBJMesh Mesh in Meshes)
+            if (!textureOnly)
             {
-                System.Diagnostics.Debug.WriteLine("reading mat");
-                Vector3 MinVector = new Vector3();
-                Vector3 MaxVector = new Vector3();
+                scene.Textures.Clear();
+            }
+            if (scene.Models.Count > 0)
+            {
+                H3DModel Model = scene.Models[0];
+                Model.ClearMeshes();
+                Model.Materials.Clear();
 
-                Dictionary<PICAVertex, int> Vertices = new Dictionary<PICAVertex, int>();
+                Model.Name = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
 
-                List<H3DSubMesh> SubMeshes = new List<H3DSubMesh>();
+                ushort MaterialIndex = 0;
 
-                Queue<PICAVertex> VerticesQueue = new Queue<PICAVertex>();
+                Model.Flags = 0;
+                Model.BoneScaling = H3DBoneScaling.Standard;
+                Model.MeshNodesVisibility.Clear();
+                Model.Skeleton.Clear();
+                Model.MeshNodesVisibility.Add(true);
 
-                foreach (PICAVertex Vertex in Mesh.Vertices)
+                float Height = 0;
+
+                foreach (OBJMesh Mesh in Meshes)
                 {
-                    VerticesQueue.Enqueue(Vertex);
-                }
+                    System.Diagnostics.Debug.WriteLine("reading mat");
+                    Vector3 MinVector = new Vector3();
+                    Vector3 MaxVector = new Vector3();
 
-                while (VerticesQueue.Count > 2)
-                {
-                    List<ushort> Indices = new List<ushort>();
+                    Dictionary<PICAVertex, int> Vertices = new Dictionary<PICAVertex, int>();
 
-                    while (VerticesQueue.Count > 0)
+                    List<H3DSubMesh> SubMeshes = new List<H3DSubMesh>();
+
+                    Queue<PICAVertex> VerticesQueue = new Queue<PICAVertex>();
+
+                    foreach (PICAVertex Vertex in Mesh.Vertices)
                     {
-                        for (int Tri = 0; Tri < 3; Tri++)
-                        {
-                            PICAVertex Vertex = VerticesQueue.Dequeue();
-
-                            if (Vertices.ContainsKey(Vertex))
-                            {
-                                Indices.Add((ushort)Vertices[Vertex]);
-                            }
-                            else
-                            {
-                                Indices.Add((ushort)Vertices.Count);
-
-                                if (Vertex.Position.X < MinVector.X) MinVector.X = Vertex.Position.X;
-                                if (Vertex.Position.Y < MinVector.Y) MinVector.Y = Vertex.Position.Y;
-                                if (Vertex.Position.Z < MinVector.Z) MinVector.Z = Vertex.Position.Z;
-
-                                if (Vertex.Position.X > MaxVector.X) MaxVector.X = Vertex.Position.X;
-                                if (Vertex.Position.Y > MaxVector.Y) MaxVector.Y = Vertex.Position.Y;
-                                if (Vertex.Position.Z > MaxVector.Z) MaxVector.Z = Vertex.Position.Z;
-
-                                Vertices.Add(Vertex, Vertices.Count);
-                            }
-                        }
+                        VerticesQueue.Enqueue(Vertex);
                     }
 
-                    H3DSubMesh SM = new H3DSubMesh();
+                    while (VerticesQueue.Count > 2)
+                    {
+                        List<ushort> Indices = new List<ushort>();
 
-                    SM.BoneIndices = new ushort[] { 0 };
-                    SM.Skinning = H3DSubMeshSkinning.Smooth;
-                    SM.Indices = Indices.ToArray();
+                        while (VerticesQueue.Count > 0)
+                        {
+                            for (int Tri = 0; Tri < 3; Tri++)
+                            {
+                                PICAVertex Vertex = VerticesQueue.Dequeue();
 
-                    SubMeshes.Add(SM);
+                                if (Vertices.ContainsKey(Vertex))
+                                {
+                                    Indices.Add((ushort)Vertices[Vertex]);
+                                }
+                                else
+                                {
+                                    Indices.Add((ushort)Vertices.Count);
+
+                                    if (Vertex.Position.X < MinVector.X) MinVector.X = Vertex.Position.X;
+                                    if (Vertex.Position.Y < MinVector.Y) MinVector.Y = Vertex.Position.Y;
+                                    if (Vertex.Position.Z < MinVector.Z) MinVector.Z = Vertex.Position.Z;
+
+                                    if (Vertex.Position.X > MaxVector.X) MaxVector.X = Vertex.Position.X;
+                                    if (Vertex.Position.Y > MaxVector.Y) MaxVector.Y = Vertex.Position.Y;
+                                    if (Vertex.Position.Z > MaxVector.Z) MaxVector.Z = Vertex.Position.Z;
+
+                                    Vertices.Add(Vertex, Vertices.Count);
+                                }
+                            }
+                        }
+
+                        H3DSubMesh SM = new H3DSubMesh();
+
+                        SM.BoneIndices = new ushort[] { };
+                        SM.Skinning = H3DSubMeshSkinning.None;
+                        SM.Indices = Indices.ToArray();
+
+                        SubMeshes.Add(SM);
+                    }
+
+                    //Mesh
+                    List<PICAAttribute> Attributes = PICAAttribute.GetAttributes(
+                        PICAAttributeName.Position,
+                        PICAAttributeName.Normal,
+                        PICAAttributeName.TexCoord0,
+                        PICAAttributeName.Color
+                    );
+
+                    H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
+                    {
+                        Skinning = H3DMeshSkinning.Rigid,
+                        MeshCenter = (MinVector + MaxVector) * 0.5f,
+                        MaterialIndex = MaterialIndex
+                    };
+
+                    if (Height < MaxVector.Y)
+                        Height = MaxVector.Y;
+
+                    //Material
+                    string MatName = $"Mat{MaterialIndex++.ToString("D5")}_{Mesh.MaterialName}";
+
+                    H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, Mesh.MaterialName, null);
+
+                    Material.Texture0Name = Materials[Mesh.MaterialName].DiffuseTexture;
+                    //Material.Texture0Name = "dummy";
+                    System.Diagnostics.Debug.WriteLine(Material.Name);
+                    Material.MaterialParams.AlphaTest.Enabled = true;
+                    Material.MaterialParams.AlphaTest.Function = PICATestFunc.Greater;
+
+                    Material.TextureMappers[0].MagFilter = H3DTextureMagFilter.Nearest;
+
+                    Model.Materials.Add(Material);
+
+                    M.UpdateBoolUniforms(Material);
+
+                    Model.AddMesh(M);
                 }
 
-                //Mesh
-                List<PICAAttribute> Attributes = PICAAttribute.GetAttributes(
-                    PICAAttributeName.Position,
-                    PICAAttributeName.Normal,
-                    PICAAttributeName.TexCoord0,
-                    PICAAttributeName.Color,
-                    PICAAttributeName.BoneIndex,
-                    PICAAttributeName.BoneWeight);
 
-                H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
-                {
-                    Skinning = H3DMeshSkinning.Smooth,
-                    MeshCenter = (MinVector + MaxVector) * 0.5f,
-                    MaterialIndex = MaterialIndex
-                };
+                /*
+                 * On Pokémon, the root bone (on the animaiton file) is used by the game to move
+                 * characters around, and all rigged bones are parented to this bone.
+                 * It's usually the Waist bone, that points upward and is half the character height.
+                 */
+                /*Model.Skeleton.Add(new H3DBone(
+                    new Vector3(0, Height * 0.5f, 0),
+                    new Vector3(0, 0, (float)(Math.PI * 0.5)),
+                    Vector3.One,
+                    "Waist",
+                    -1));*/
 
-                if (Height < MaxVector.Y)
-                    Height = MaxVector.Y;
+                //Model.Skeleton[0].CalculateTransform(Model.Skeleton);
 
-                //Material
-                string MatName = $"Mat{MaterialIndex++.ToString("D5")}_{Mesh.MaterialName}";
+                scene.Models.Clear();
 
-                H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, Mesh.MaterialName, null);
+                Output.Models.Add(Model);
 
-                Material.Texture0Name = Materials[Mesh.MaterialName].DiffuseTexture;
-                System.Diagnostics.Debug.WriteLine(Material.Name);
-                Material.MaterialParams.AlphaTest.Enabled = true;
-                Material.MaterialParams.AlphaTest.Function = PICATestFunc.Greater;
-                Material.TextureMappers[0].MagFilter = H3DTextureMagFilter.Nearest;
-
-                Model.Materials.Add(Material);
-
-                M.UpdateBoolUniforms(Material);
-
-                Model.AddMesh(M);
+                Output.CopyMaterials();
             }
-
-            /*
-             * On Pokémon, the root bone (on the animaiton file) is used by the game to move
-             * characters around, and all rigged bones are parented to this bone.
-             * It's usually the Waist bone, that points upward and is half the character height.
-             */
-            /*Model.Skeleton.Add(new H3DBone(
-                new Vector3(0, Height * 0.5f, 0),
-                new Vector3(0, 0, (float)(Math.PI * 0.5)),
-                Vector3.One,
-                "Waist",
-                -1));*/
-
-            //Model.Skeleton[0].CalculateTransform(Model.Skeleton);
-
-            scene.Models.Clear();
-
-            Output.Models.Add(Model);
-
-            Output.CopyMaterials();
 
             return Output;
         }

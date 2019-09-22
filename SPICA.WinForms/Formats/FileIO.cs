@@ -35,7 +35,7 @@ namespace SPICA.WinForms.Formats
                 if (Data != null)
                 {
                     Scene.Materials.Clear();
-                    Scene.Textures.Clear();
+                    //Scene.Textures.Clear();
 
                     Scene.Merge(Data);
 

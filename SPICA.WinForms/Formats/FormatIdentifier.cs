@@ -31,6 +31,7 @@ namespace SPICA.WinForms.Formats
             {
                 case ".smd": return new SMD(FileName).ToH3D(FilePath);
                 case ".obj": return new OBJ(FileName, scene).ToH3D(FilePath);
+                case ".mtl": return new OBJ(FileName, scene).ToH3D(FilePath);
                 case ".mbn":
                     using (FileStream Input = new FileStream(FileName, FileMode.Open))
                     {

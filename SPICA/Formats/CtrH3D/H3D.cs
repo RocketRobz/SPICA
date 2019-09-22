@@ -99,6 +99,10 @@ namespace SPICA.Formats.CtrH3D
 
             H3D Scene = Deserializer.Deserialize<H3D>();
 
+            /*Scene.Models.Clear();
+            Scene.Textures.Clear();
+            Scene.Materials.Clear();*/
+
             Scene.BackwardCompatibility = Header.BackwardCompatibility;
             Scene.ForwardCompatibility  = Header.ForwardCompatibility;
 
@@ -217,9 +221,13 @@ namespace SPICA.Formats.CtrH3D
 
                 int Index = 0;
 
-                while (Tgt.Contains(Name))
+                /*while (Tgt.Contains(Name))
                 {
                     Name = $"{Value.Name}_{++Index}";
+                }*/
+                if (Tgt.Contains(Name))
+                {
+                    continue;
                 }
 
                 Value.Name = Name;
