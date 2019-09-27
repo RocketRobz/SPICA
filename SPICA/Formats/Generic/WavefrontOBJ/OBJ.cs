@@ -294,7 +294,12 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                 Model.ClearMeshes();
                 Model.Materials.Clear();
 
-                Model.Name = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
+                string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
+
+                if (newName != "");
+                {
+                    Model.Name = newName;
+                }
 
                 ushort MaterialIndex = 0;
 
