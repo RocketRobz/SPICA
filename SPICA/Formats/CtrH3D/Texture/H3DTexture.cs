@@ -70,7 +70,7 @@ namespace SPICA.Formats.CtrH3D.Texture
             {
                 Name = Path.GetFileNameWithoutExtension(FileName);
 
-                Format = PICATextureFormat.RGBA8;
+                Format = PICATextureFormat.ETC1A4;
 
                 H3DTextureImpl(Img);
             }
