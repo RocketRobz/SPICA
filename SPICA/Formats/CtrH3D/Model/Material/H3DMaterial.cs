@@ -209,6 +209,11 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
             TextureCommands = Writer.GetBuffer();
 
+            if (Serializer.FileVersion < 0x21 && TextureMappersCompat == null)
+            {
+                TextureMappersCompat = new H3DTextureMapper[3];
+            }
+
             if (TextureMappersCompat != null)
             {
                 Array.Copy(TextureMappers, TextureMappersCompat, 3);

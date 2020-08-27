@@ -220,14 +220,14 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
-
             for (int Index = 0; Index < AttributesTotal; Index++)
             {
+
                 if (((BufferFormats >> (48 + Index)) & 1) != 0)
                 {
                     FixedAttributes.Add(new PICAFixedAttribute()
                     {
-                        Name  = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
+                        Name = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
                         Value = Fixed[Index]
                     });
                 }

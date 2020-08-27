@@ -166,7 +166,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
         [Ignore] public bool DepthBufferRead;
         [Ignore] public bool DepthBufferWrite;
 
-        [Ignore] public readonly float[] TextureSources;
+        [Ignore] public float[] TextureSources;
 
         public string Name
         {

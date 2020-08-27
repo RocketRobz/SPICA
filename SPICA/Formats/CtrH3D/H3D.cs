@@ -9,12 +9,15 @@ using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Formats.CtrH3D.Scene;
 using SPICA.Formats.CtrH3D.Shader;
 using SPICA.Formats.CtrH3D.Texture;
+using SPICA.Math3D;
+using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System;
 using System.IO;
+using System.Numerics;
 
 namespace SPICA.Formats.CtrH3D
 {
@@ -98,10 +101,6 @@ namespace SPICA.Formats.CtrH3D
             new H3DRelocator(MS, Header).ToAbsolute();
 
             H3D Scene = Deserializer.Deserialize<H3D>();
-
-            /*Scene.Models.Clear();
-            Scene.Textures.Clear();
-            Scene.Materials.Clear();*/
 
             Scene.BackwardCompatibility = Header.BackwardCompatibility;
             Scene.ForwardCompatibility  = Header.ForwardCompatibility;
@@ -227,7 +226,7 @@ namespace SPICA.Formats.CtrH3D
                 }*/
                 if (Tgt.Contains(Name))
                 {
-                    continue;
+                    Tgt.Remove(Tgt[Tgt.Find(Name)]);
                 }
 
                 Value.Name = Name;
@@ -248,7 +247,6 @@ namespace SPICA.Formats.CtrH3D
                     //This kind of problem doesn't happen on BCH, but may happen on converted formats.
                     if (!Materials.Contains(Material.Name))
                     {
-                        System.Diagnostics.Debug.WriteLine("Adding " + Material.Name);
                         Materials.Add(Material.MaterialParams);
                     }
                 }
