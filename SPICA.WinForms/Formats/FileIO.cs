@@ -11,33 +11,30 @@ using System.Windows.Forms;
 
 namespace SPICA.WinForms.Formats
 {
-    class FileIO
+    public class FileIO
     {
         public static H3D Merge(string[] FileNames, Renderer Renderer, H3D Scene = null)
         {
-            if (Scene == null)
-            {
-                //Renderer.DeleteAll();
-
-                Scene = new H3D();
-            }
-
             int OpenFiles = 0;
 
             foreach (string FileName in FileNames)
             {
                 H3DDict<H3DBone> Skeleton = null;
 
-                if (Scene.Models.Count > 0) Skeleton = Scene.Models[0].Skeleton;
+                if (Scene != null && Scene.Models.Count > 0) Skeleton = Scene.Models[0].Skeleton;
 
-                H3D Data = FormatIdentifier.IdentifyAndOpen(FileName, Scene, Skeleton);
+                H3D Data = FormatIdentifier.IdentifyAndOpen(FileName, Skeleton);
 
                 if (Data != null)
                 {
-                    Scene.Materials.Clear();
-                    //Scene.Textures.Clear();
-
-                    Scene.Merge(Data);
+                    if (Scene == null)
+                    {
+                        Scene = Data;
+                    }
+                    else
+                    {
+                        Scene.Merge(Data);
+                    }
 
                     Renderer.Merge(Data);
 
