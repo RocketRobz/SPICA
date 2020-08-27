@@ -69,6 +69,8 @@
             this.TextureInfo = new System.Windows.Forms.Label();
             this.TabPageCameras = new System.Windows.Forms.TabPage();
             this.CamerasList = new SPICA.WinForms.GUI.SUIList();
+            this.TabPageLights = new System.Windows.Forms.TabPage();
+            this.LightsList = new SPICA.WinForms.GUI.SUIList();
             this.TabPageSklAnims = new System.Windows.Forms.TabPage();
             this.SklAnimsList = new SPICA.WinForms.GUI.SUIList();
             this.TabPageMatAnims = new System.Windows.Forms.TabPage();
@@ -90,8 +92,7 @@
             this.TBtnShowInfo = new System.Windows.Forms.ToolStripButton();
             this.TBtnShowSide = new System.Windows.Forms.ToolStripButton();
             this.TopIcons = new System.Windows.Forms.ToolStrip();
-            this.TabPageLights = new System.Windows.Forms.TabPage();
-            this.LightsList = new SPICA.WinForms.GUI.SUIList();
+            this.ToolButtonRemove = new System.Windows.Forms.ToolStripButton();
             this.TopMenu.SuspendLayout();
             this.AnimControlsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainContainer)).BeginInit();
@@ -102,13 +103,13 @@
             this.TabPageTextures.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TexturePreview)).BeginInit();
             this.TabPageCameras.SuspendLayout();
+            this.TabPageLights.SuspendLayout();
             this.TabPageSklAnims.SuspendLayout();
             this.TabPageMatAnims.SuspendLayout();
             this.TabPageVisAnims.SuspendLayout();
             this.TabPageCamAnims.SuspendLayout();
             this.SideIcons.SuspendLayout();
             this.TopIcons.SuspendLayout();
-            this.TabPageLights.SuspendLayout();
             this.SuspendLayout();
             // 
             // TopMenu
@@ -533,6 +534,36 @@
             this.CamerasList.TabIndex = 0;
             this.CamerasList.Selected += new System.EventHandler(this.CamerasList_Selected);
             // 
+            // TabPageLights
+            // 
+            this.TabPageLights.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(53)))), ((int)(((byte)(48)))));
+            this.TabPageLights.Controls.Add(this.LightsList);
+            this.TabPageLights.ImageIndex = 3;
+            this.TabPageLights.Location = new System.Drawing.Point(4, 28);
+            this.TabPageLights.Name = "TabPageLights";
+            this.TabPageLights.Padding = new System.Windows.Forms.Padding(3);
+            this.TabPageLights.Size = new System.Drawing.Size(234, 414);
+            this.TabPageLights.TabIndex = 7;
+            this.TabPageLights.ToolTipText = "Lights";
+            // 
+            // LightsList
+            // 
+            this.LightsList.BackColor = System.Drawing.Color.Transparent;
+            this.LightsList.BarColor = System.Drawing.Color.White;
+            this.LightsList.BarColorHover = System.Drawing.Color.FromArgb(((int)(((byte)(188)))), ((int)(((byte)(183)))), ((int)(((byte)(123)))));
+            this.LightsList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LightsList.ForeColor = System.Drawing.Color.White;
+            this.LightsList.ItemHeight = 16;
+            this.LightsList.Location = new System.Drawing.Point(3, 3);
+            this.LightsList.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
+            this.LightsList.MultiSelect = true;
+            this.LightsList.Name = "LightsList";
+            this.LightsList.SelectedIndex = -1;
+            this.LightsList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(134)))), ((int)(((byte)(106)))));
+            this.LightsList.Size = new System.Drawing.Size(228, 408);
+            this.LightsList.TabIndex = 1;
+            this.LightsList.Selected += new System.EventHandler(this.LightsList_Selected);
+            // 
             // TabPageSklAnims
             // 
             this.TabPageSklAnims.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(53)))), ((int)(((byte)(48)))));
@@ -656,7 +687,8 @@
             this.SideIcons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(73)))), ((int)(((byte)(66)))), ((int)(((byte)(61)))));
             this.SideIcons.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolButtonExport,
-            this.ToolButtonImport});
+            this.ToolButtonImport,
+            this.ToolButtonRemove});
             this.SideIcons.Location = new System.Drawing.Point(0, 0);
             this.SideIcons.Name = "SideIcons";
             this.SideIcons.Size = new System.Drawing.Size(242, 31);
@@ -800,35 +832,16 @@
             this.TopIcons.Size = new System.Drawing.Size(944, 30);
             this.TopIcons.TabIndex = 3;
             // 
-            // TabPageLights
+            // ToolButtonRemove
             // 
-            this.TabPageLights.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(53)))), ((int)(((byte)(48)))));
-            this.TabPageLights.Controls.Add(this.LightsList);
-            this.TabPageLights.ImageIndex = 3;
-            this.TabPageLights.Location = new System.Drawing.Point(4, 28);
-            this.TabPageLights.Name = "TabPageLights";
-            this.TabPageLights.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageLights.Size = new System.Drawing.Size(234, 414);
-            this.TabPageLights.TabIndex = 7;
-            this.TabPageLights.ToolTipText = "Lights";
-            // 
-            // LightsList
-            // 
-            this.LightsList.BackColor = System.Drawing.Color.Transparent;
-            this.LightsList.BarColor = System.Drawing.Color.White;
-            this.LightsList.BarColorHover = System.Drawing.Color.FromArgb(((int)(((byte)(188)))), ((int)(((byte)(183)))), ((int)(((byte)(123)))));
-            this.LightsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LightsList.ForeColor = System.Drawing.Color.White;
-            this.LightsList.ItemHeight = 16;
-            this.LightsList.Location = new System.Drawing.Point(3, 3);
-            this.LightsList.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
-            this.LightsList.MultiSelect = true;
-            this.LightsList.Name = "LightsList";
-            this.LightsList.SelectedIndex = -1;
-            this.LightsList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(134)))), ((int)(((byte)(106)))));
-            this.LightsList.Size = new System.Drawing.Size(228, 408);
-            this.LightsList.TabIndex = 1;
-            this.LightsList.Selected += new System.EventHandler(this.LightsList_Selected);
+            this.ToolButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ToolButtonRemove.Image = ((System.Drawing.Image)(resources.GetObject("ToolButtonRemove.Image")));
+            this.ToolButtonRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolButtonRemove.Name = "ToolButtonRemove";
+            this.ToolButtonRemove.Size = new System.Drawing.Size(54, 28);
+            this.ToolButtonRemove.Text = "Remove";
+            this.ToolButtonRemove.ToolTipText = "Removes the selected scene element";
+            this.ToolButtonRemove.Click += new System.EventHandler(this.ToolButtonRemove_Click);
             // 
             // FrmMain
             // 
@@ -861,6 +874,7 @@
             this.TabPageTextures.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.TexturePreview)).EndInit();
             this.TabPageCameras.ResumeLayout(false);
+            this.TabPageLights.ResumeLayout(false);
             this.TabPageSklAnims.ResumeLayout(false);
             this.TabPageMatAnims.ResumeLayout(false);
             this.TabPageVisAnims.ResumeLayout(false);
@@ -869,7 +883,6 @@
             this.SideIcons.PerformLayout();
             this.TopIcons.ResumeLayout(false);
             this.TopIcons.PerformLayout();
-            this.TabPageLights.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -939,5 +952,6 @@
         private GUI.SUIList VisAnimsList;
         private System.Windows.Forms.TabPage TabPageLights;
         private GUI.SUIList LightsList;
+        private System.Windows.Forms.ToolStripButton ToolButtonRemove;
     }
 }

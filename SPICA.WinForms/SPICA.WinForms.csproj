@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SPICA.WinForms</RootNamespace>
     <AssemblyName>SPICA.WinForms</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <PublishUrl>publish\</PublishUrl>
@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\FileIO.cs" />
+    <Compile Include="Formats\GFAreaLOD.cs" />
     <Compile Include="Formats\GFPkmnSklAnim.cs" />
     <Compile Include="Formats\FormatIdentifier.cs" />
     <Compile Include="Formats\GFBtlSklAnim.cs" />

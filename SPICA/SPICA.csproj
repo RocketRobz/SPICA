@@ -293,6 +293,7 @@
     <Compile Include="Formats\CtrH3D\Scene\H3DScene.cs" />
     <Compile Include="Formats\CtrH3D\Shader\H3DShader.cs" />
     <Compile Include="Formats\CtrH3D\Texture\H3DTexture.cs" />
+    <Compile Include="Formats\Generic\CMIF\CMIFFile.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAE.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAEAccessor.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAEAnimation.cs" />
@@ -475,6 +476,9 @@
     <Compile Include="Serialization\SerializationOptions.cs" />
     <Compile Include="Serialization\Serializer\RefValue.cs" />
     <Compile Include="Serialization\Serializer\Section.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

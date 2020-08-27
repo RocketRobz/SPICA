@@ -34,7 +34,6 @@ namespace SPICA.WinForms
         public H3D            Scene;
         private Renderer       Renderer;
         private Shader         Shader;
-        public static Boolean norender = false;
 
         private float Dimension;
 
@@ -80,8 +79,6 @@ namespace SPICA.WinForms
         
         private void FileOpen(string[] Files, bool MergeMode)
         {
-            System.Diagnostics.Debug.WriteLine("open");
-            norender = true;
             if (!MergeMode)
             {
                 Renderer.DeleteAll();
@@ -261,10 +258,7 @@ namespace SPICA.WinForms
 
             foreach (int i in ModelsList.SelectedIndices)
             {
-                if (!norender)
-                {
-                    Renderer.Models[i].Render();
-                }
+                Renderer.Models[i].Render();
             }
 
             UIAxis.Render();
@@ -330,7 +324,6 @@ namespace SPICA.WinForms
 
         private void TBtnShowGrid_Click(object sender, EventArgs e)
         {
-            norender = false;
             ToggleGrid();
         }
 
@@ -752,5 +745,65 @@ namespace SPICA.WinForms
             AnimGrp.Continue();
         }
         #endregion
+
+        private void ToolButtonRemove_Click(object sender, EventArgs e)
+        {
+            if (ModelsList.Focused)
+            {
+                if (ModelsList.SelectedIndex >= 0)
+                {
+                    Scene.Models.Remove(ModelsList.SelectedIndex);
+                }
+            }
+            else if (TexturesList.Focused)
+            {
+                if (TexturesList.SelectedIndex >= 0)
+                {
+                    Scene.Textures.Remove(TexturesList.SelectedIndex);
+                }
+            }
+            else if (CamerasList.Focused)
+            {
+                if (TexturesList.SelectedIndex >= 0)
+                {
+                    Scene.Cameras.Remove(CamerasList.SelectedIndex);
+                }
+            }
+            else if (LightsList.Focused)
+            {
+                if (LightsList.SelectedIndex >= 0)
+                {
+                    Scene.Lights.Remove(LightsList.SelectedIndex);
+                }
+            }
+            else if (SklAnimsList.Focused)
+            {
+                if (SklAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.SkeletalAnimations.Remove(SklAnimsList.SelectedIndex);
+                }
+            }
+            else if (MatAnimsList.Focused)
+            {
+                if (MatAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.MaterialAnimations.Remove(MatAnimsList.SelectedIndex);
+                }
+            }
+            else if (VisAnimsList.Focused)
+            {
+                if (VisAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.VisibilityAnimations.Remove(VisAnimsList.SelectedIndex);
+                }
+            }
+            else if (CamAnimsList.Focused)
+            {
+                if (CamAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.CameraAnimations.Remove(CamAnimsList.SelectedIndex);
+                }
+            }
+        }
     }
 }
