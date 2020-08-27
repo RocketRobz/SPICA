@@ -288,6 +288,13 @@ namespace SPICA.Formats.Generic.StudioMdl
 
             Model.Name = "Model";
 
+            string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
+
+            if (newName != "") ;
+            {
+                Model.Name = newName;
+            }
+
             ushort MaterialIndex = 0;
 
             if (Skeleton.Count > 0)
@@ -316,7 +323,7 @@ namespace SPICA.Formats.Generic.StudioMdl
 
                 while (VerticesQueue.Count > 2)
                 {
-                    List<ushort> Indices     = new List<ushort>();
+                    List<ushort> Indices = new List<ushort>();
                     List<ushort> BoneIndices = new List<ushort>();
 
                     int TriCount = VerticesQueue.Count / 3;
@@ -395,10 +402,10 @@ namespace SPICA.Formats.Generic.StudioMdl
 
                     SubMeshes.Add(new H3DSubMesh()
                     {
-                        Skinning         = H3DSubMeshSkinning.Smooth,
+                        Skinning = H3DSubMeshSkinning.Smooth,
                         BoneIndicesCount = (ushort)BoneIndices.Count,
-                        BoneIndices      = BoneIndices.ToArray(),
-                        Indices          = Indices.ToArray()
+                        BoneIndices = BoneIndices.ToArray(),
+                        Indices = Indices.ToArray()
                     });
                 }
 
@@ -413,8 +420,8 @@ namespace SPICA.Formats.Generic.StudioMdl
                 //Mesh
                 H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
                 {
-                    Skinning      = H3DMeshSkinning.Smooth,
-                    MeshCenter    = (MinVector + MaxVector) * 0.5f,
+                    Skinning = H3DMeshSkinning.Smooth,
+                    MeshCenter = (MinVector + MaxVector) * 0.5f,
                     MaterialIndex = MaterialIndex
                 };
 
@@ -423,18 +430,32 @@ namespace SPICA.Formats.Generic.StudioMdl
                 string MatName = $"Mat{MaterialIndex++.ToString("D5")}_{TexName}";
 
                 H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, MatName, TexName);
-
-                Model.Materials.Add(Material);
+                //Material.TextureMappers[0].WrapU = PICATextureWrap.Mirror;
+                //Material.MaterialParams.TextureCoords[0].Scale = new Vector2(2f, 1f);
+                //Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
 
                 if (TextureSearchPath != null && !Output.Textures.Contains(TexName))
                 {
-                    string TextureFile = Path.Combine(TextureSearchPath, Mesh.MaterialName);
+                    string[] files = Directory.GetFiles(TextureSearchPath);
 
-                    if (File.Exists(TextureFile))
+                    foreach (string s in files)
                     {
-                        Output.Textures.Add(new H3DTexture(TextureFile));
+                        if (s.EndsWith(".png"))
+                        {
+                            if (TexName.StartsWith(Path.GetFileNameWithoutExtension(s)))
+                            {
+                                H3DTexture tex = new H3DTexture(s);
+                                if (!Output.Textures.Contains(tex.Name)) {
+                                    Output.Textures.Add(tex);
+                                }
+                                Material.Texture0Name = tex.Name;
+                                break;
+                            }
+                        }
                     }
                 }
+
+                Model.Materials.Add(Material);
 
                 M.UpdateBoolUniforms(Material);
 
