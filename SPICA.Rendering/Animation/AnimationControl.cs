@@ -73,7 +73,7 @@ namespace SPICA.Rendering.Animation
 
                 foreach (H3DAnimationElement Elem in Anim.Elements)
                 {
-                    if (UsedNames.Contains(Elem.Name)) continue;
+                    if (UsedNames.Contains(Elem.Name) && Anim.AnimationType != H3DAnimationType.Material) continue;
 
                     UsedNames.Add(Elem.Name);
 

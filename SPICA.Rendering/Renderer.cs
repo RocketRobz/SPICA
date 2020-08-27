@@ -103,7 +103,10 @@ namespace SPICA.Rendering
         {
             foreach (H3DLUT LUT in LUTs)
             {
-                this.LUTs.Add(LUT.Name, new LUT(LUT));
+                if (!this.LUTs.ContainsKey(LUT.Name))
+                {
+                    this.LUTs.Add(LUT.Name, new LUT(LUT));
+                }
             }
         }
 
@@ -121,7 +124,10 @@ namespace SPICA.Rendering
             {
                 foreach (H3DShader Shader in Shaders)
                 {
-                    this.Shaders.Add(Shader.Name, new VertexShader(Shader));
+                    if (!this.Shaders.ContainsKey(Shader.Name))
+                    {
+                        this.Shaders.Add(Shader.Name, new VertexShader(Shader));
+                    }
                 }
 
                 UpdateAllShaders();
