@@ -180,6 +180,7 @@ namespace SPICA.Rendering
             Params.StencilTest.SetGL();
             Params.StencilOperation.SetGL();
             Params.DepthColorMask.SetGL();
+            Params.AlphaTest.SetGL();
 
             GL.BlendColor(Params.BlendColor.ToColor4());
 

@@ -48,6 +48,11 @@ namespace SPICA.WinForms.Formats
                 case ".obj": return new OBJ(FileName).ToH3D(FilePath);
                 case ".mtl": return new OBJ(FileName).ToH3D(FilePath);
                 case ".cmif": return new CMIFFile(new FileStream(FileName, FileMode.Open)).ToH3D();
+                case ".gfbmdl": 
+                    H3DModel model = new GFModel(new BinaryReader(new FileStream(FileName, FileMode.Open)), Path.GetFileNameWithoutExtension(FileName)).ToH3DModel();
+                    H3D Scene = new H3D();
+                    Scene.Models.Add(model);
+                    return Scene;
                 case ".mbn":
                     using (FileStream Input = new FileStream(FileName, FileMode.Open))
                     {

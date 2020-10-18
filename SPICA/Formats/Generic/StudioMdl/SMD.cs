@@ -180,6 +180,10 @@ namespace SPICA.Formats.Generic.StudioMdl
                                             //NOTE: 3DS formats only supports 4 bones per vertex max
                                             //Warn user when more nodes are used?
                                             int NodesCount = int.Parse(Params[9]);
+                                            if (NodesCount > 4)
+                                            {
+                                                Console.WriteLine("Warning: Too many bone indices.");
+                                            }
 
                                             for (int Node = 0; Node < Math.Min(NodesCount, 4); Node++)
                                             {
@@ -187,8 +191,6 @@ namespace SPICA.Formats.Generic.StudioMdl
                                                 Vertex.Weights[Node] = ParseFloat(Params[11 + Node * 2]);
                                             }
                                         }
-
-                                        Vertex.Color = Vector4.One;
 
                                         CurrMesh.Vertices.Add(Vertex);
                                     }
@@ -412,7 +414,6 @@ namespace SPICA.Formats.Generic.StudioMdl
                 List<PICAAttribute> Attributes = PICAAttribute.GetAttributes(
                     PICAAttributeName.Position,
                     PICAAttributeName.Normal,
-                    PICAAttributeName.Color,
                     PICAAttributeName.TexCoord0,
                     PICAAttributeName.BoneIndex,
                     PICAAttributeName.BoneWeight);
@@ -430,6 +431,7 @@ namespace SPICA.Formats.Generic.StudioMdl
                 string MatName = $"Mat{MaterialIndex++.ToString("D5")}_{TexName}";
 
                 H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, MatName, TexName);
+                Material.MaterialParams.FaceCulling = PICAFaceCulling.BackFace;
                 //Material.TextureMappers[0].WrapU = PICATextureWrap.Mirror;
                 //Material.MaterialParams.TextureCoords[0].Scale = new Vector2(2f, 1f);
                 //Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
@@ -442,9 +444,10 @@ namespace SPICA.Formats.Generic.StudioMdl
                     {
                         if (s.EndsWith(".png"))
                         {
-                            if (TexName.StartsWith(Path.GetFileNameWithoutExtension(s)))
+                            if (TexName == Path.GetFileNameWithoutExtension(s))
                             {
                                 H3DTexture tex = new H3DTexture(s);
+                                tex.Name = TexName;
                                 if (!Output.Textures.Contains(tex.Name)) {
                                     Output.Textures.Add(tex);
                                 }

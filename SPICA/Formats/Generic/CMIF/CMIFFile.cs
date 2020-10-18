@@ -22,7 +22,7 @@ namespace SPICA.Formats.Generic.CMIF
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 1;
+        public const int READER_VERSION = 3;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
@@ -37,7 +37,12 @@ namespace SPICA.Formats.Generic.CMIF
                 throw new ArgumentException("Invalid magic.");
             }
             uint version = dis.ReadUInt32();
-            if (version > READER_VERSION)
+            uint backwardsCompatibility = version;
+            if (version >= 3)
+            {
+                backwardsCompatibility = dis.ReadUInt32();
+            }
+            if (backwardsCompatibility > READER_VERSION)
             {
                 throw new NotSupportedException("File version is too new!");
             }
@@ -51,6 +56,11 @@ namespace SPICA.Formats.Generic.CMIF
             uint texturesPointerTableOffset = dis.ReadUInt32();
             uint sklAnmPointerTableOffset = dis.ReadUInt32();
             uint matAnmPointerTableOffset = dis.ReadUInt32();
+            uint othersPointerTableOffset = 0xFFFFFFFF;
+            if (version >= 2)
+            {
+                othersPointerTableOffset = dis.ReadUInt32();
+            }
 
             dis.BaseStream.Seek(modelsPointerTableOffset, SeekOrigin.Begin);
             PointerTable modelsPT = new PointerTable(dis);
@@ -380,6 +390,7 @@ namespace SPICA.Formats.Generic.CMIF
             foreach (H3DModel m in models)
             {
                 output.Models.Add(m);
+                output.CopyMaterials();
             }
 
             foreach (H3DTexture t in textures)
@@ -485,11 +496,11 @@ namespace SPICA.Formats.Generic.CMIF
 
                 H3DBone bone = new H3DBone();
 
-                bone.Name           = readStringFromOffset(dis);
-                bone.ParentIndex    = (short)dis.ReadUInt32();
-                bone.Translation    = VectorExtensions.ReadVector3(dis);
-                bone.Rotation       = VectorExtensions.ReadVector3(dis);
-                bone.Scale          = VectorExtensions.ReadVector3(dis);
+                bone.Name = readStringFromOffset(dis);
+                bone.ParentIndex = (short)dis.ReadUInt32();
+                bone.Translation = VectorExtensions.ReadVector3(dis);
+                bone.Rotation = VectorExtensions.ReadVector3(dis);
+                bone.Scale = VectorExtensions.ReadVector3(dis);
 
                 m.Skeleton.Add(bone);
             }
@@ -538,8 +549,8 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.TextureCoords[i].Rotation = dis.ReadSingle();
                     mat.MaterialParams.TextureCoords[i].Scale = VectorExtensions.ReadVector2(dis);
 
-                    mat.TextureMappers[i].WrapU     = (PICATextureWrap)dis.ReadByte();
-                    mat.TextureMappers[i].WrapV     = (PICATextureWrap)dis.ReadByte();
+                    mat.TextureMappers[i].WrapU = (PICATextureWrap)dis.ReadByte();
+                    mat.TextureMappers[i].WrapV = (PICATextureWrap)dis.ReadByte();
                     mat.TextureMappers[i].MagFilter = (H3DTextureMagFilter)dis.ReadByte();
                     mat.TextureMappers[i].MinFilter = (H3DTextureMinFilter)dis.ReadByte();
                 }
@@ -550,33 +561,33 @@ namespace SPICA.Formats.Generic.CMIF
                 mat.MaterialParams.DepthColorMask.Enabled = depthOpEnabled;
                 if (depthOpEnabled) {
                     byte depthOpByte = dis.ReadByte();
-                    mat.MaterialParams.DepthColorMask.DepthFunc     = (PICATestFunc)(depthOpByte & 7);
-                    mat.MaterialParams.DepthColorMask.RedWrite      = (depthOpByte & 8) > 0;
-                    mat.MaterialParams.DepthColorMask.GreenWrite    = (depthOpByte & 16) > 0;
-                    mat.MaterialParams.DepthColorMask.BlueWrite     = (depthOpByte & 32) > 0;
-                    mat.MaterialParams.DepthColorMask.AlphaWrite    = (depthOpByte & 64) > 0;
-                    mat.MaterialParams.DepthColorMask.DepthWrite    = (depthOpByte & 128) > 0;
+                    mat.MaterialParams.DepthColorMask.DepthFunc = (PICATestFunc)(depthOpByte & 7);
+                    mat.MaterialParams.DepthColorMask.RedWrite = (depthOpByte & 8) > 0;
+                    mat.MaterialParams.DepthColorMask.GreenWrite = (depthOpByte & 16) > 0;
+                    mat.MaterialParams.DepthColorMask.BlueWrite = (depthOpByte & 32) > 0;
+                    mat.MaterialParams.DepthColorMask.AlphaWrite = (depthOpByte & 64) > 0;
+                    mat.MaterialParams.DepthColorMask.DepthWrite = (depthOpByte & 128) > 0;
                 }
 
                 //Alpha test
                 byte alphaTestByte = dis.ReadByte();
-                mat.MaterialParams.AlphaTest.Enabled    = (alphaTestByte & 128) > 0;
-                mat.MaterialParams.AlphaTest.Function   = (PICATestFunc)(alphaTestByte & 7);
-                mat.MaterialParams.AlphaTest.Reference  = dis.ReadByte();
+                mat.MaterialParams.AlphaTest.Enabled = (alphaTestByte & 128) > 0;
+                mat.MaterialParams.AlphaTest.Function = (PICATestFunc)(alphaTestByte & 7);
+                mat.MaterialParams.AlphaTest.Reference = dis.ReadByte();
 
                 //Blend config
                 byte blendMasterByte = dis.ReadByte();
                 byte blendRgbByte = dis.ReadByte();
                 byte blendAlphaByte = dis.ReadByte();
 
-                mat.MaterialParams.ColorOperation.BlendMode     = PICABlendMode.Blend;  //nothing to disable it on H3D
-                mat.MaterialParams.BlendFunction.ColorEquation  = (PICABlendEquation)(blendMasterByte & 7);
-                mat.MaterialParams.BlendFunction.AlphaEquation  = (PICABlendEquation)((blendMasterByte >> 3) & 7);
-                mat.MaterialParams.BlendFunction.ColorSrcFunc   = (PICABlendFunc)(blendRgbByte & 15);
-                mat.MaterialParams.BlendFunction.ColorDstFunc   = (PICABlendFunc)((blendRgbByte >> 4) & 15);
-                mat.MaterialParams.BlendFunction.AlphaSrcFunc   = (PICABlendFunc)(blendAlphaByte & 15);
-                mat.MaterialParams.BlendFunction.AlphaDstFunc   = (PICABlendFunc)((blendAlphaByte >> 4) & 15);
-                mat.MaterialParams.BlendColor                   = new RGBA(dis);
+                mat.MaterialParams.ColorOperation.BlendMode = PICABlendMode.Blend;  //nothing to disable it on H3D
+                mat.MaterialParams.BlendFunction.ColorEquation = (PICABlendEquation)(blendMasterByte & 7);
+                mat.MaterialParams.BlendFunction.AlphaEquation = (PICABlendEquation)((blendMasterByte >> 3) & 7);
+                mat.MaterialParams.BlendFunction.ColorSrcFunc = (PICABlendFunc)(blendRgbByte & 15);
+                mat.MaterialParams.BlendFunction.ColorDstFunc = (PICABlendFunc)((blendRgbByte >> 4) & 15);
+                mat.MaterialParams.BlendFunction.AlphaSrcFunc = (PICABlendFunc)(blendAlphaByte & 15);
+                mat.MaterialParams.BlendFunction.AlphaDstFunc = (PICABlendFunc)((blendAlphaByte >> 4) & 15);
+                mat.MaterialParams.BlendColor = new RGBA(dis);
 
                 //TexEnv config
                 if (dis.ReadPaddedString(4) != TEVCONF_MAGIC)
@@ -608,8 +619,23 @@ namespace SPICA.Formats.Generic.CMIF
                         mat.MaterialParams.TexEnvStages[stage].Operand.Alpha[i] = (PICATextureCombinerAlphaOp)dis.ReadByte();
                     }
                 }
+                mat.MaterialParams.Constant0Color = mat.MaterialParams.TexEnvStages[0].Color;
+                mat.MaterialParams.Constant1Color = mat.MaterialParams.TexEnvStages[1].Color;
+                mat.MaterialParams.Constant2Color = mat.MaterialParams.TexEnvStages[2].Color;
+                mat.MaterialParams.Constant3Color = mat.MaterialParams.TexEnvStages[3].Color;
+                mat.MaterialParams.Constant4Color = mat.MaterialParams.TexEnvStages[4].Color;
+                mat.MaterialParams.Constant5Color = mat.MaterialParams.TexEnvStages[5].Color;
+                mat.MaterialParams.Constant0Assignment = 0;
+                mat.MaterialParams.Constant1Assignment = 1;
+                mat.MaterialParams.Constant2Assignment = 2;
+                mat.MaterialParams.Constant3Assignment = 3;
+                mat.MaterialParams.Constant4Assignment = 4;
+                mat.MaterialParams.Constant5Assignment = 5;
+                //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat.MaterialParams.TexEnvStages, Newtonsoft.Json.Formatting.Indented));
                 m.Materials.Add(mat);
             }
+
+            List<H3DMesh> meshes = new List<H3DMesh>();
 
             while (meshesPT.hasNext())
             {
@@ -908,7 +934,6 @@ namespace SPICA.Formats.Generic.CMIF
                         SubMeshes.Add(SM);
                     }
                 }
-
                 H3DMesh mesh = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
                 {
                     Skinning = H3DMeshSkinning.Smooth,
@@ -916,6 +941,7 @@ namespace SPICA.Formats.Generic.CMIF
                     MaterialIndex = (ushort)m.Materials.Find(materialName)
                 };
                 mesh.Layer = renderLayer;
+
                 mesh.UpdateBoolUniforms(m.Materials[mesh.MaterialIndex]);
 
                 foreach (VertexAttribute a in attribs)
@@ -930,8 +956,10 @@ namespace SPICA.Formats.Generic.CMIF
                     }
                 }
 
-                m.AddMesh(mesh);
+                meshes.Add(mesh);
             }
+            meshes = meshes.OrderBy(mesh => mesh.Layer).ToList();
+            m.AddMeshes(meshes);
 
             return m;
         }

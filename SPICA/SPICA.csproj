@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\Common\BitUtils.cs" />
+    <Compile Include="Formats\Common\PokemonBBoxGen.cs" />
     <Compile Include="Formats\Common\CRC32Hash.cs" />
     <Compile Include="Formats\Common\Exceptions.cs" />
     <Compile Include="Formats\Common\FNV1a.cs" />
@@ -476,9 +477,6 @@
     <Compile Include="Serialization\SerializationOptions.cs" />
     <Compile Include="Serialization\Serializer\RefValue.cs" />
     <Compile Include="Serialization\Serializer\Section.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

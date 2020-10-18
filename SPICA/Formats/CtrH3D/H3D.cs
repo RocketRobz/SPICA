@@ -109,11 +109,20 @@ namespace SPICA.Formats.CtrH3D
 
             Scene.Flags = Header.Flags;
 
+            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene.Models[0], Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings() { 
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            }));*/
+
             return Scene;
         }
 
         public static void Save(string FileName, H3D Scene)
         {
+            foreach (H3DModel Model in Scene.Models)
+            {
+                PokemonBBoxGen.CreateModelBBox(Model);
+            }
+
             using (FileStream FS = new FileStream(FileName, FileMode.Create))
             {
                 H3DHeader Header = new H3DHeader();

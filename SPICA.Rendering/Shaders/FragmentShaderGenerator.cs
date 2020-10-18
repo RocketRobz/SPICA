@@ -1,9 +1,10 @@
-﻿using SPICA.Formats.CtrH3D.Model.Material;
+﻿using OpenTK;
+using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Math3D;
 using SPICA.PICA.Commands;
 using SPICA.PICA.Shader;
 using SPICA.Rendering.Properties;
-
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -80,6 +81,8 @@ namespace SPICA.Rendering.Shaders
                 string[] ColorArgs = new string[3];
                 string[] AlphaArgs = new string[3];
 
+                //System.Numerics.Vector4 ConstantColor = Stage.Color.ToVector4();
+                //string Constant = ("vec4(" + ConstantColor.X + ";" + ConstantColor.Y + ";" + ConstantColor.Z + ";" + ConstantColor.W + ")").Replace(",", ".").Replace(";", ",");
                 string Constant;
 
                 switch (Params.GetConstantIndex(Index++))
@@ -170,23 +173,6 @@ namespace SPICA.Rendering.Shaders
 
                 if (Index < 6 && (HasColor || HasAlpha))
                     SB.AppendLine("\tPrevious = Output;");
-            }
-
-            if (Params.AlphaTest.Enabled)
-            {
-                string Reference = (Params.AlphaTest.Reference / 255f).ToString(CultureInfo.InvariantCulture);
-
-                //Note: This is the condition to pass the test, so we actually test the inverse to discard
-                switch (Params.AlphaTest.Function)
-                {
-                    case PICATestFunc.Never:    SB.AppendLine("\tdiscard;");                               break;
-                    case PICATestFunc.Equal:    SB.AppendLine($"\tif (Output.a != {Reference}) discard;"); break;
-                    case PICATestFunc.Notequal: SB.AppendLine($"\tif (Output.a == {Reference}) discard;"); break;
-                    case PICATestFunc.Less:     SB.AppendLine($"\tif (Output.a >= {Reference}) discard;"); break;
-                    case PICATestFunc.Lequal:   SB.AppendLine($"\tif (Output.a > {Reference}) discard;");  break;
-                    case PICATestFunc.Greater:  SB.AppendLine($"\tif (Output.a <= {Reference}) discard;"); break;
-                    case PICATestFunc.Gequal:   SB.AppendLine($"\tif (Output.a < {Reference}) discard;");  break;
-                }
             }
 
             SB.AppendLine("}");

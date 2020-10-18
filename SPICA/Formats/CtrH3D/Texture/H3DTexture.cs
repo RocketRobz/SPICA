@@ -63,7 +63,7 @@ namespace SPICA.Formats.CtrH3D.Texture
 
             using (Img)
             {
-                Name = Path.GetFileNameWithoutExtension(FileName);
+                Name = Path.GetFileName(FileName);
 
                 Format = Image.IsAlphaPixelFormat(Img.PixelFormat) ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
 
