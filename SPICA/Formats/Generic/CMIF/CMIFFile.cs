@@ -22,7 +22,7 @@ namespace SPICA.Formats.Generic.CMIF
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 3;
+        public const int READER_VERSION = 4;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
@@ -44,7 +44,7 @@ namespace SPICA.Formats.Generic.CMIF
             }
             if (backwardsCompatibility > READER_VERSION)
             {
-                throw new NotSupportedException("File version is too new!");
+                throw new NotSupportedException("File version is too new! - " + backwardsCompatibility);
             }
 
             uint stringTableOffset  = dis.ReadUInt32();
@@ -68,7 +68,7 @@ namespace SPICA.Formats.Generic.CMIF
             while (modelsPT.hasNext())
             {
                 modelsPT.next(dis);
-                models.Add(readModel(dis));
+                models.Add(readModel(dis, version));
             }
 
             dis.BaseStream.Seek(texturesPointerTableOffset, SeekOrigin.Begin);
@@ -77,7 +77,7 @@ namespace SPICA.Formats.Generic.CMIF
             while (texPT.hasNext())
             {
                 texPT.next(dis);
-                textures.Add(readTexture(dis));
+                textures.Add(readTexture(dis, version));
             }
 
             dis.BaseStream.Seek(sklAnmPointerTableOffset, SeekOrigin.Begin);
@@ -413,7 +413,7 @@ namespace SPICA.Formats.Generic.CMIF
 
         public const string TEXTURE_MAGIC = "IFTX";
 
-        static H3DTexture readTexture(BinaryReader dis)
+        static H3DTexture readTexture(BinaryReader dis, uint fileVersion)
         {
             if (dis.ReadPaddedString(4) != TEXTURE_MAGIC)
             {
@@ -433,7 +433,7 @@ namespace SPICA.Formats.Generic.CMIF
             for (int Y = 0; Y < height; Y++)
             {
                 int IOffs = Stride * Y;
-                int OOffs = Stride * (height - 1 - Y);
+                int OOffs = Stride * (fileVersion >= 4 ? Y : (height - 1 - Y));
 
                 for (int X = 0; X < width; X++)
                 {
@@ -462,7 +462,7 @@ namespace SPICA.Formats.Generic.CMIF
         public const string MATERIAL_MAGIC = "IFMT";
 	    public const string TEVCONF_MAGIC = "TENV";
 
-        static H3DModel readModel(BinaryReader dis)
+        static H3DModel readModel(BinaryReader dis, uint fileVersion)
         {
             H3DModel m = new H3DModel();
 
@@ -471,6 +471,14 @@ namespace SPICA.Formats.Generic.CMIF
                 throw new ArgumentException("Invalid model magic.");
             }
             m.Name = readStringFromOffset(dis);
+            if (fileVersion >= 4)
+            {
+                m.MetaData = readMetaData(dis);
+            }
+            else
+            {
+                m.MetaData = new H3DMetaData();
+            }
 
             //these pointer tables are condensed - no pointers to them
             PointerTable bonesPT = new PointerTable(dis);
@@ -483,7 +491,6 @@ namespace SPICA.Formats.Generic.CMIF
             }
 
             m.BoneScaling = H3DBoneScaling.Maya;
-            m.MeshNodesVisibility.Add(true);
 
             while (bonesPT.hasNext())
             {
@@ -526,6 +533,16 @@ namespace SPICA.Formats.Generic.CMIF
 
                 H3DMaterial mat = H3DMaterial.GetSimpleMaterial(m.Name, matName, tex0Name);
                 mat.MaterialParams.Flags = H3DMaterialFlags.IsFragmentLightingEnabled;
+                //mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
+                //mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
+                //mat.MaterialParams.LUTReflecRSamplerName = "Toontable.tga";
+                //mat.MaterialParams.ShaderReference = "0@FieldChar";
+                //mat.MaterialParams.LightSetIndex = 2;
+                mat.MaterialParams.EmissionColor = RGBA.Black;
+                mat.MaterialParams.Specular0Color = RGBA.Black;
+                mat.MaterialParams.Specular1Color = RGBA.Black;
+                mat.MaterialParams.AmbientColor = RGBA.White;
+                mat.MaterialParams.DiffuseColor = RGBA.White;
 
                 float[] uvPtrs = new float[4];
 
@@ -554,6 +571,7 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.TextureMappers[i].MagFilter = (H3DTextureMagFilter)dis.ReadByte();
                     mat.TextureMappers[i].MinFilter = (H3DTextureMinFilter)dis.ReadByte();
                 }
+
                 mat.MaterialParams.TextureSources = uvPtrs;
 
                 //Depth test
@@ -588,6 +606,22 @@ namespace SPICA.Formats.Generic.CMIF
                 mat.MaterialParams.BlendFunction.AlphaSrcFunc = (PICABlendFunc)(blendAlphaByte & 15);
                 mat.MaterialParams.BlendFunction.AlphaDstFunc = (PICABlendFunc)((blendAlphaByte >> 4) & 15);
                 mat.MaterialParams.BlendColor = new RGBA(dis);
+
+                //Stencil test
+                if (fileVersion >= 4)
+                {
+                    byte stencilConfig = dis.ReadByte();
+                    mat.MaterialParams.StencilTest.Enabled = (stencilConfig & 128) > 0;
+                    mat.MaterialParams.StencilTest.Function = (PICATestFunc)(stencilConfig & 0x7F);
+                    mat.MaterialParams.StencilTest.Reference = dis.ReadByte();
+                    mat.MaterialParams.StencilTest.Mask = dis.ReadByte();
+                    mat.MaterialParams.StencilTest.BufferMask = dis.ReadByte();
+
+                    //Stencil operation
+                    mat.MaterialParams.StencilOperation.FailOp = (PICAStencilOp)dis.ReadByte();
+                    mat.MaterialParams.StencilOperation.ZFailOp = (PICAStencilOp)dis.ReadByte();
+                    mat.MaterialParams.StencilOperation.ZPassOp = (PICAStencilOp)dis.ReadByte();
+                }
 
                 //TexEnv config
                 if (dis.ReadPaddedString(4) != TEVCONF_MAGIC)
@@ -631,6 +665,16 @@ namespace SPICA.Formats.Generic.CMIF
                 mat.MaterialParams.Constant3Assignment = 3;
                 mat.MaterialParams.Constant4Assignment = 4;
                 mat.MaterialParams.Constant5Assignment = 5;
+
+                if (fileVersion >= 4)
+                {
+                    mat.MaterialParams.MetaData = readMetaData(dis);
+                }
+                else
+                {
+                    mat.MaterialParams.MetaData = new H3DMetaData();
+                }
+
                 //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat.MaterialParams.TexEnvStages, Newtonsoft.Json.Formatting.Indented));
                 m.Materials.Add(mat);
             }
@@ -649,6 +693,25 @@ namespace SPICA.Formats.Generic.CMIF
                 string meshName = readStringFromOffset(dis);    //suprisingly, SPICA does not have support for object names
                 string materialName = readStringFromOffset(dis);
                 int renderLayer = dis.ReadByte();
+                H3DMetaData meshMetaData;
+                if (fileVersion >= 4)
+                {
+                    meshMetaData = readMetaData(dis);
+                    byte primitiveType = dis.ReadByte();
+                    if (primitiveType > 0)
+                    {
+                        Console.WriteLine("WARN: PICA only supports triangle primitives. Skipping");
+                        continue;
+                    }
+                }
+                else
+                {
+                    meshMetaData = new H3DMetaData();
+                }
+
+                m.MeshNodesVisibility.Add(true);
+                int nodeIndex = m.MeshNodesTree.Count;
+                m.MeshNodesTree.Add(meshName);
 
                 int numAttributes = dis.ReadByte();
                 List<VertexAttribute> attribs = new List<VertexAttribute>();
@@ -940,7 +1003,9 @@ namespace SPICA.Formats.Generic.CMIF
                     MeshCenter = (MinVector + MaxVector) * 0.5f,
                     MaterialIndex = (ushort)m.Materials.Find(materialName)
                 };
+                mesh.NodeIndex = (ushort)nodeIndex;
                 mesh.Layer = renderLayer;
+                mesh.MetaData = meshMetaData;
 
                 mesh.UpdateBoolUniforms(m.Materials[mesh.MaterialIndex]);
 
@@ -960,8 +1025,66 @@ namespace SPICA.Formats.Generic.CMIF
             }
             meshes = meshes.OrderBy(mesh => mesh.Layer).ToList();
             m.AddMeshes(meshes);
+            m.MeshNodesCount = meshes.Count;
 
             return m;
+        }
+
+        public const string META_DATA_MAGIC = "META";
+
+        static H3DMetaData readMetaData(BinaryReader dis)
+        {
+            H3DMetaData meta = new H3DMetaData();
+
+            if (dis.ReadPaddedString(4) != META_DATA_MAGIC)
+            {
+                throw new InvalidMagicException("Invalid metadata magic.");
+            }
+            int count = dis.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                string name = readStringFromOffset(dis);
+                MetaDataValueType type = (MetaDataValueType)dis.ReadByte();
+                int listSize = dis.ReadInt32();
+
+                switch (type)
+                {
+                    case MetaDataValueType.FLOAT:
+                        float[] floats = new float[listSize];
+                        for (int v = 0; v < floats.Length; v++)
+                        {
+                            floats[v] = dis.ReadSingle();
+                        }
+                        meta.Add(new H3DMetaDataValue(name, floats));
+                        break;
+                    case MetaDataValueType.INT:
+                        int[] ints = new int[listSize];
+                        for (int v = 0; v < ints.Length; v++)
+                        {
+                            ints[v] = dis.ReadInt32();
+                        }
+                        meta.Add(new H3DMetaDataValue(name, ints));
+                        break;
+                    case MetaDataValueType.STRING:
+                        string[] strings = new string[listSize];
+                        for (int v = 0; v < strings.Length; v++)
+                        {
+                            strings[v] = dis.ReadNullTerminatedString();
+                        }
+                        meta.Add(new H3DMetaDataValue(name, strings));
+                        break;
+                }
+            }
+
+            return meta;
+        }
+
+        public enum MetaDataValueType
+        {
+            FLOAT,
+            INT,
+            STRING,
+            OTHER
         }
 
         class VertexAttribute
