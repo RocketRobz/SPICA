@@ -178,6 +178,17 @@ namespace SPICA.PICA.Converters
                 R | (R >> 5));
         }
 
+        private static void EncodeRGB565(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            uint RGB = GetUInt(Input, InputAddress);
+
+            byte RG = (byte)((RGB >> 3 & 0x1f) | (RGB >> 5 & 0xE0));
+            byte GB = (byte)((RGB >> 13 & 0x7) | (RGB >> 16 & 0xF8));
+
+            Output[OutputAddress] = RG;
+            Output[OutputAddress + 1] = GB;
+        }
+
         private static void DecodeRGBA4(byte[] Buffer, int Address, ushort Value)
         {
             int R = (Value >> 4) & 0xf;
@@ -203,6 +214,16 @@ namespace SPICA.PICA.Converters
             return (ushort)(
                 Buffer[Address + 0] << 0 |
                 Buffer[Address + 1] << 8);
+        }
+
+        private static uint GetUInt(byte[] Buffer, int Address)
+        {
+            return (uint)(
+                Buffer[Address + 0] << 0 |
+                Buffer[Address + 1] << 8 |
+                Buffer[Address + 2] << 16|
+                Buffer[Address + 3] << 24
+            );
         }
 
         public static Bitmap DecodeBitmap(byte[] Input, int Width, int Height, PICATextureFormat Format)
@@ -261,6 +282,11 @@ namespace SPICA.PICA.Converters
 
                             switch (Format)
                             {
+                                case PICATextureFormat.RGB8:
+                                    Array.Copy(Input, IOffs, Output, OOffs, 3);
+
+                                    OOffs += 3;
+                                    break;
                                 case PICATextureFormat.RGBA8:
                                     Output[OOffs + 0] = Input[IOffs + 3];
                                     Output[OOffs + 1] = Input[IOffs + 0];
@@ -268,7 +294,11 @@ namespace SPICA.PICA.Converters
                                     Output[OOffs + 3] = Input[IOffs + 2];
 
                                     OOffs += 4;
+                                    break;
+                                case PICATextureFormat.RGB565:
+                                    EncodeRGB565(Input, IOffs, Output, OOffs);
 
+                                    OOffs += 2;
                                     break;
 
                                 default: throw new NotImplementedException();
