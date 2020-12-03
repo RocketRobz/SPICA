@@ -15,7 +15,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
     [Inline]
     public class H3DMaterial : ICustomSerialization, INamed
     {
-        public readonly H3DMaterialParams MaterialParams;
+        public H3DMaterialParams MaterialParams;
 
         public H3DTexture Texture0;
         public H3DTexture Texture1;
@@ -87,11 +87,19 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.MaterialParams.DepthColorMask.AlphaWrite = true;
             Output.MaterialParams.DepthColorMask.DepthWrite = true;
 
+            Output.MaterialParams.StencilOperation.ZPassOp = PICAStencilOp.Replace;
+            
+            Output.MaterialParams.StencilTest.Enabled = true;
+            Output.MaterialParams.StencilTest.Function = PICATestFunc.Always;
+            Output.MaterialParams.StencilTest.BufferMask = 0xFF;
+            Output.MaterialParams.StencilTest.Mask = 0xFF;
+            Output.MaterialParams.StencilTest.Reference = 0x7F;
+
             Output.MaterialParams.ColorBufferRead  = false;
             Output.MaterialParams.ColorBufferWrite = true;
 
-            Output.MaterialParams.StencilBufferRead  = false;
-            Output.MaterialParams.StencilBufferWrite = false;
+            Output.MaterialParams.StencilBufferRead  = true;
+            Output.MaterialParams.StencilBufferWrite = true;
 
             Output.MaterialParams.DepthBufferRead  = true;
             Output.MaterialParams.DepthBufferWrite = true;

@@ -139,12 +139,13 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             bool VertA = Attributes.Any(x => x.Name == PICAAttributeName.Color);
             bool BoneW = Attributes.Any(x => x.Name == PICAAttributeName.BoneWeight);
 
-            bool UVMap0 = Params.TextureCoords[0].MappingType == H3DTextureMappingType.UvCoordinateMap;
-            bool UVMap1 = Params.TextureCoords[1].MappingType == H3DTextureMappingType.UvCoordinateMap;
-            bool UVMap2 = Params.TextureCoords[2].MappingType == H3DTextureMappingType.UvCoordinateMap;
-
+            bool IsTex0 = Material.EnabledTextures[0];
             bool IsTex1 = Material.EnabledTextures[1];
             bool IsTex2 = Material.EnabledTextures[2];
+
+            bool UVMap0 = Params.TextureCoords[0].MappingType == H3DTextureMappingType.UvCoordinateMap && IsTex0;
+            bool UVMap1 = Params.TextureCoords[1].MappingType == H3DTextureMappingType.UvCoordinateMap && IsTex1;
+            bool UVMap2 = Params.TextureCoords[2].MappingType == H3DTextureMappingType.UvCoordinateMap && IsTex2;
 
             if (BoneW)
             {
@@ -156,7 +157,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 bool IsSmoSk = SM.Skinning == H3DSubMeshSkinning.Smooth;
                 bool IsRgdSk = SM.Skinning == H3DSubMeshSkinning.Rigid;
 
-                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
+                /*SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat,    3);
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA,   7);
@@ -165,7 +166,18 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1,  10);
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2,  11);
                 SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1,  13);
-                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2,  14);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2,  14);*/
+                //Pokemon has those built differently for some reason
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 15);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1, 10);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2, 11);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1, 13);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2, 14);
             }
         }
 
@@ -220,6 +232,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
+            Console.WriteLine(BufferAttributes + " mat " + MaterialIndex);
             for (int Index = 0; Index < AttributesTotal; Index++)
             {
 
@@ -230,6 +243,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                         Name = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
                         Value = Fixed[Index]
                     });
+                    Console.WriteLine("Added fixed attr " + FixedAttributes.Last().Name);
                 }
                 else
                 {
@@ -258,6 +272,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     }
 
                     Attributes.Add(Attrib);
+                    Console.WriteLine("Added variable attr " + Attrib.Name + " with format " + Attrib.Format);
                 }
             }
 

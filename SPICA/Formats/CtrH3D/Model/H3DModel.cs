@@ -68,6 +68,7 @@ namespace SPICA.Formats.CtrH3D.Model
             Skeleton = new H3DDict<H3DBone>();
 
             MeshNodesVisibility = new List<bool>();
+            MeshNodesTree = new H3DPatriciaTree();
 
             UserDefinedAddress = 0; //SBZ, set by program on 3DS
         }

@@ -16,6 +16,7 @@ using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 
@@ -109,9 +110,16 @@ namespace SPICA.Formats.CtrH3D
 
             Scene.Flags = Header.Flags;
 
-            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene.Models[0], Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings() { 
+            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings()
+            {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             }));*/
+
+            /*foreach (H3DMaterial mat in Scene.Models[0].Materials) {
+                mat.MaterialParams.StencilTest.Reference = 255;
+                mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeID")].Values[0] = 255;
+                //mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeType")].Values[0] = 0;
+            }*/
 
             return Scene;
         }
