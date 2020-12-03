@@ -2,6 +2,7 @@
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Animation;
 using SPICA.Formats.CtrH3D.Model;
+using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Formats.Generic.CMIF;
 using SPICA.Formats.Generic.StudioMdl;
 using SPICA.Formats.Generic.WavefrontOBJ;
@@ -32,6 +33,19 @@ namespace SPICA.WinForms.Formats
 
             switch (Path.GetExtension(FileName).ToLower())
             {
+                case ".txt":
+                    H3D AllFiles = new H3D();
+
+                    string[] files = File.ReadAllLines(FileName);
+
+                    string Parent = FilePath;
+
+                    foreach (string File in files)
+                    {
+                        AllFiles.Merge(IdentifyAndOpen(Path.Combine(Parent, File)));
+                    }
+
+                    return AllFiles;
                 case ".gmp":
                     H3D OutputH3D = new H3D();
                     GF1MotionPack MotPack = new GF1MotionPack(new BinaryReader(new FileStream(FileName, FileMode.Open)));
@@ -48,6 +62,10 @@ namespace SPICA.WinForms.Formats
                 case ".obj": return new OBJ(FileName).ToH3D(FilePath);
                 case ".mtl": return new OBJ(FileName).ToH3D(FilePath);
                 case ".cmif": return new CMIFFile(new FileStream(FileName, FileMode.Open)).ToH3D();
+                case ".png":
+                    H3D Out = new H3D();
+                    Out.Textures.Add(new H3DTexture(FileName, true));
+                    return Out;
                 case ".gfbmdl": 
                     H3DModel model = new GFModel(new BinaryReader(new FileStream(FileName, FileMode.Open)), Path.GetFileNameWithoutExtension(FileName)).ToH3DModel();
                     H3D Scene = new H3D();
@@ -101,6 +119,10 @@ namespace SPICA.WinForms.Formats
                     {
                         return Gfx.Open(FS);
                     }
+                    else if (Magic.StartsWith("CMIF"))
+                    {
+                        return new CMIFFile(new FileStream(FileName, FileMode.Open)).ToH3D();
+                    }
                     else
                     {
                         if (GFPackage.IsValidPackage(FS))
@@ -111,7 +133,7 @@ namespace SPICA.WinForms.Formats
                             {
                                 case "AL": Output = GFAreaLOD.OpenAsH3D(FS, PackHeader, 1); break;
                                 case "AD": Output = GFPackedTexture.OpenAsH3D(FS, PackHeader, 1); break;
-                                case "BG": Output = GFL2OverWorld.OpenAsH3D(FS, PackHeader, Skeleton); break;
+                                //case "BG": Output = GFL2OverWorld.OpenAsH3D(FS, PackHeader, Skeleton); break;
                                 case "BS": Output = GFBtlSklAnim.OpenAsH3D(FS, PackHeader, Skeleton); break;
                                 case "CM": Output = GFCharaModel.OpenAsH3D(FS, PackHeader); break;
                                 case "GR": Output = GFOWMapModel.OpenAsH3D(FS, PackHeader); break;

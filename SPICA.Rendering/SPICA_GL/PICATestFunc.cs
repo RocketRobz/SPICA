@@ -71,6 +71,7 @@ namespace SPICA.Rendering.SPICA_GL
             {
                 GL.Disable(EnableCap.AlphaTest);
             }
+
             GL.AlphaFunc(AlphaTest.Function.ToAlphaFunction(), AlphaTest.Reference / 255f);
         }
     }

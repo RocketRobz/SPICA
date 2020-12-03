@@ -4,6 +4,7 @@ using OpenTK.Graphics;
 using SPICA.Formats;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Animation;
+using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Rendering;
 using SPICA.WinForms.Formats;
 using SPICA.WinForms.GUI;
@@ -802,6 +803,36 @@ namespace SPICA.WinForms
                 if (CamAnimsList.SelectedIndex >= 0)
                 {
                     Scene.CameraAnimations.Remove(CamAnimsList.SelectedIndex);
+                }
+            }
+        }
+
+        private void ToolButtonImport_Click(object sender, EventArgs e)
+        {
+            if (TexturesList.Focused)
+            {
+                if (TexturesList.SelectedIndex != -1)
+                {
+                    IgnoreClicks = true;
+                    using (OpenFileDialog OpenDlg = new OpenFileDialog())
+                    {
+                        OpenDlg.Filter = "Portable Network Graphics|*.png";
+                        OpenDlg.Multiselect = false;
+
+                        if (OpenDlg.ShowDialog() == DialogResult.OK && OpenDlg.FileNames.Length > 0)
+                        {
+                            H3DTexture OriginTex = Scene.Textures[TexturesList.SelectedIndex];
+                            H3DTexture Tex = new H3DTexture(OpenDlg.FileName, true, OriginTex.Format);
+                            Tex.Name = OriginTex.Name;
+                            Scene.Textures[TexturesList.SelectedIndex] = Tex;
+                            TextureManager.FlushCache();
+                            TexturesList_SelectedIndexChanged(null, null);
+                            Renderer.Merge(Scene.Textures);
+                        }
+                    }
+                    Application.DoEvents();
+
+                    IgnoreClicks = false;
                 }
             }
         }

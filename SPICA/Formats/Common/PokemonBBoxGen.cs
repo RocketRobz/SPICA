@@ -13,7 +13,7 @@ namespace SPICA.Formats.Common
 {
     class PokemonBBoxGen
     {
-        public const string BBOX_MIN_MAX = "BBoxMinMax";
+        public const string BBOX_MIN_MAX = "$BBoxMinMax";
 
         public static void CreateModelBBox(H3DModel Model)
         {

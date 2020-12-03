@@ -82,6 +82,7 @@
             this.SideIcons = new System.Windows.Forms.ToolStrip();
             this.ToolButtonExport = new System.Windows.Forms.ToolStripButton();
             this.ToolButtonImport = new System.Windows.Forms.ToolStripButton();
+            this.ToolButtonRemove = new System.Windows.Forms.ToolStripButton();
             this.TBtnOpen = new System.Windows.Forms.ToolStripButton();
             this.TBtnMerge = new System.Windows.Forms.ToolStripButton();
             this.TBtnSave = new System.Windows.Forms.ToolStripButton();
@@ -92,7 +93,6 @@
             this.TBtnShowInfo = new System.Windows.Forms.ToolStripButton();
             this.TBtnShowSide = new System.Windows.Forms.ToolStripButton();
             this.TopIcons = new System.Windows.Forms.ToolStrip();
-            this.ToolButtonRemove = new System.Windows.Forms.ToolStripButton();
             this.TopMenu.SuspendLayout();
             this.AnimControlsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainContainer)).BeginInit();
@@ -714,6 +714,18 @@
             this.ToolButtonImport.Name = "ToolButtonImport";
             this.ToolButtonImport.Size = new System.Drawing.Size(28, 28);
             this.ToolButtonImport.ToolTipText = "Import...";
+            this.ToolButtonImport.Click += new System.EventHandler(this.ToolButtonImport_Click);
+            // 
+            // ToolButtonRemove
+            // 
+            this.ToolButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ToolButtonRemove.Image = ((System.Drawing.Image)(resources.GetObject("ToolButtonRemove.Image")));
+            this.ToolButtonRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolButtonRemove.Name = "ToolButtonRemove";
+            this.ToolButtonRemove.Size = new System.Drawing.Size(54, 28);
+            this.ToolButtonRemove.Text = "Remove";
+            this.ToolButtonRemove.ToolTipText = "Removes the selected scene element";
+            this.ToolButtonRemove.Click += new System.EventHandler(this.ToolButtonRemove_Click);
             // 
             // TBtnOpen
             // 
@@ -831,17 +843,6 @@
             this.TopIcons.Name = "TopIcons";
             this.TopIcons.Size = new System.Drawing.Size(944, 30);
             this.TopIcons.TabIndex = 3;
-            // 
-            // ToolButtonRemove
-            // 
-            this.ToolButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.ToolButtonRemove.Image = ((System.Drawing.Image)(resources.GetObject("ToolButtonRemove.Image")));
-            this.ToolButtonRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolButtonRemove.Name = "ToolButtonRemove";
-            this.ToolButtonRemove.Size = new System.Drawing.Size(54, 28);
-            this.ToolButtonRemove.Text = "Remove";
-            this.ToolButtonRemove.ToolTipText = "Removes the selected scene element";
-            this.ToolButtonRemove.Click += new System.EventHandler(this.ToolButtonRemove_Click);
             // 
             // FrmMain
             // 
