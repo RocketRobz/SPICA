@@ -232,7 +232,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
-            Console.WriteLine(BufferAttributes + " mat " + MaterialIndex);
+
             for (int Index = 0; Index < AttributesTotal; Index++)
             {
 
@@ -243,7 +243,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                         Name = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
                         Value = Fixed[Index]
                     });
-                    Console.WriteLine("Added fixed attr " + FixedAttributes.Last().Name);
                 }
                 else
                 {
@@ -272,7 +271,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     }
 
                     Attributes.Add(Attrib);
-                    Console.WriteLine("Added variable attr " + Attrib.Name + " with format " + Attrib.Format);
                 }
             }
 
