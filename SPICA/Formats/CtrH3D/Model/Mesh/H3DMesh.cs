@@ -232,7 +232,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
-
             for (int Index = 0; Index < AttributesTotal; Index++)
             {
 

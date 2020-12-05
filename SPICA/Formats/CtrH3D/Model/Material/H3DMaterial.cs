@@ -117,6 +117,9 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.TextureMappers[0].MinFilter = H3DTextureMinFilter.NearestMipmapLinear;
             Output.TextureMappers[0].MagFilter = H3DTextureMagFilter.Linear;
 
+            Output.TextureMappers[1].SamplerType = 1;
+            Output.TextureMappers[2].SamplerType = 1;
+
             Output.TextureMappers[0].BorderColor = RGBA.White;
 
             Output.MaterialParams.TextureCoords[0].Flags = H3DTextureCoordFlags.IsDirty;

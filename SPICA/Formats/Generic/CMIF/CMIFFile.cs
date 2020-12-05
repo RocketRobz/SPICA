@@ -22,7 +22,7 @@ namespace SPICA.Formats.Generic.CMIF
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 4;
+        public const int READER_VERSION = 5;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
@@ -528,10 +528,18 @@ namespace SPICA.Formats.Generic.CMIF
 
                 string matName = readStringFromOffset(dis);
 
+                string shaderName = "DefaultShader";
+                byte shaderIndex = 0;
+                if (fileVersion >= 5)
+                {
+                    shaderName = readStringFromOffset(dis);
+                    shaderIndex = dis.ReadByte();
+                }
+
                 int textureCount = dis.ReadByte();
                 string tex0Name = textureCount > 0 ? readStringFromOffset(dis) : null;
 
-                H3DMaterial mat = H3DMaterial.GetSimpleMaterial(m.Name, matName, tex0Name);
+                H3DMaterial mat = H3DMaterial.GetSimpleMaterial(m.Name, matName, tex0Name, shaderName, shaderIndex);
                 mat.MaterialParams.Flags = H3DMaterialFlags.IsFragmentLightingEnabled;
                 //mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
                 //mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
@@ -623,6 +631,14 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.StencilOperation.ZPassOp = (PICAStencilOp)dis.ReadByte();
                 }
 
+                //Bump mapping
+                if (fileVersion >= 5)
+                {
+                    byte bumpByte = dis.ReadByte();
+                    mat.MaterialParams.BumpMode = (H3DBumpMode)(bumpByte & 3);
+                    mat.MaterialParams.BumpTexture = (byte)(bumpByte >> 2 & 3);
+                }
+
                 //TexEnv config
                 if (dis.ReadPaddedString(4) != TEVCONF_MAGIC)
                 {
@@ -675,7 +691,7 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.MetaData = new H3DMetaData();
                 }
 
-                //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat.MaterialParams.TexEnvStages, Newtonsoft.Json.Formatting.Indented));
+                //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat, Newtonsoft.Json.Formatting.Indented));
                 m.Materials.Add(mat);
             }
 
