@@ -108,6 +108,7 @@ namespace SPICA.WinForms
                 MatAnimsList.Bind(Scene.MaterialAnimations);
                 VisAnimsList.Bind(Scene.VisibilityAnimations);
                 CamAnimsList.Bind(Scene.CameraAnimations);
+                LUTsList.Bind(Scene.LUTs);
 
                 Animator.Enabled     = false;
                 LblAnimSpeed.Text    = string.Empty;
@@ -749,67 +750,81 @@ namespace SPICA.WinForms
 
         private void ToolButtonRemove_Click(object sender, EventArgs e)
         {
-            if (ModelsList.Focused)
+            if (SideTabs.SelectedTab == TabPageModels)
             {
                 if (ModelsList.SelectedIndex >= 0)
                 {
                     Scene.Models.Remove(ModelsList.SelectedIndex);
                 }
             }
-            else if (TexturesList.Focused)
+            else if (SideTabs.SelectedTab == TabPageTextures)
             {
                 if (TexturesList.SelectedIndex >= 0)
                 {
                     Scene.Textures.Remove(TexturesList.SelectedIndex);
                 }
             }
-            else if (CamerasList.Focused)
+            else if (SideTabs.SelectedTab == TabPageCameras)
             {
                 if (TexturesList.SelectedIndex >= 0)
                 {
                     Scene.Cameras.Remove(CamerasList.SelectedIndex);
                 }
             }
-            else if (LightsList.Focused)
+            else if (SideTabs.SelectedTab == TabPageLights)
             {
                 if (LightsList.SelectedIndex >= 0)
                 {
                     Scene.Lights.Remove(LightsList.SelectedIndex);
                 }
             }
-            else if (SklAnimsList.Focused)
+            else if (SideTabs.SelectedTab == TabPageSklAnims)
             {
                 if (SklAnimsList.SelectedIndex >= 0)
                 {
                     Scene.SkeletalAnimations.Remove(SklAnimsList.SelectedIndex);
                 }
             }
-            else if (MatAnimsList.Focused)
+            else if (SideTabs.SelectedTab == TabPageMatAnims)
             {
                 if (MatAnimsList.SelectedIndex >= 0)
                 {
                     Scene.MaterialAnimations.Remove(MatAnimsList.SelectedIndex);
                 }
             }
-            else if (VisAnimsList.Focused)
+            else if (SideTabs.SelectedTab == TabPageVisAnims)
             {
                 if (VisAnimsList.SelectedIndex >= 0)
                 {
                     Scene.VisibilityAnimations.Remove(VisAnimsList.SelectedIndex);
                 }
             }
-            else if (CamAnimsList.Focused)
+            else if (SideTabs.SelectedTab == TabPageCamAnims)
             {
                 if (CamAnimsList.SelectedIndex >= 0)
                 {
                     Scene.CameraAnimations.Remove(CamAnimsList.SelectedIndex);
                 }
             }
+            else if (SideTabs.SelectedTab == TabPageCameras)
+            {
+                if (CamerasList.SelectedIndex >= 0)
+                {
+                    Scene.Cameras.Remove(CamerasList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageLUTs)
+            {
+                if (LUTsList.SelectedIndex >= 0)
+                {
+                    Scene.LUTs.Remove(LUTsList.SelectedIndex);
+                }
+            }
         }
 
         private void ToolButtonImport_Click(object sender, EventArgs e)
         {
-            if (TexturesList.Focused)
+            if (SideTabs.SelectedTab == TabPageTextures)
             {
                 if (TexturesList.SelectedIndex != -1)
                 {

@@ -115,11 +115,37 @@ namespace SPICA.Formats.CtrH3D
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             }));*/
 
-            /*foreach (H3DMaterial mat in Scene.Models[0].Materials) {
-                mat.MaterialParams.StencilTest.Reference = 255;
-                mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeID")].Values[0] = 255;
-                //mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeType")].Values[0] = 0;
-            }*/
+            if (Scene.Models.Count > 0)
+            {
+                foreach (H3DMaterial mat in Scene.Models[0].Materials)
+                {
+                    /*  mat.MaterialParams.StencilTest.Reference = 255;
+                       mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeID")].Values[0] = 255;
+                       //mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeType")].Values[0] = 0;
+                    //mat.MaterialParams.MetaData.Clear();
+                    //mat.MaterialParams.VtxShaderUniforms.Clear();
+                    mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
+                    mat.MaterialParams.LUTInputSelection.ReflecR = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecG = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecB = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTReflecRSamplerName = null;
+                    mat.MaterialParams.LUTReflecRTableName = null;
+                    mat.MaterialParams.LUTReflecGSamplerName = null;
+                    mat.MaterialParams.LUTReflecGTableName = null;
+                    mat.MaterialParams.LUTReflecBSamplerName = null;
+                    mat.MaterialParams.LUTReflecBTableName = null;*/
+                    /*mat.MaterialParams.TextureCoords[0].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[1].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[2].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[0].ReferenceCameraIndex = 0;
+                    mat.MaterialParams.TextureCoords[1].ReferenceCameraIndex = 0;
+                    mat.MaterialParams.TextureCoords[2].ReferenceCameraIndex = 0;*/
+                }
+                /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene.Models[0], Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                }));*/
+            }
 
             return Scene;
         }

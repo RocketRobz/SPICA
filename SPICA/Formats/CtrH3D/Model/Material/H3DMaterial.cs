@@ -126,6 +126,14 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.MaterialParams.TextureCoords[0].ReferenceCameraIndex = -1;
             Output.MaterialParams.TextureCoords[0].Scale = Vector2.One;
 
+            Output.MaterialParams.TextureCoords[1].Flags = H3DTextureCoordFlags.IsDirty;
+            Output.MaterialParams.TextureCoords[1].ReferenceCameraIndex = -1;
+            Output.MaterialParams.TextureCoords[1].Scale = Vector2.One;
+
+            Output.MaterialParams.TextureCoords[2].Flags = H3DTextureCoordFlags.IsDirty;
+            Output.MaterialParams.TextureCoords[2].ReferenceCameraIndex = -1;
+            Output.MaterialParams.TextureCoords[2].Scale = Vector2.One;
+
             Output.MaterialParams.ShaderReference = $"{ShaderIndex}@{ShaderName}";
             Output.MaterialParams.ModelReference = $"{MaterialName}@{ModelName}";
 

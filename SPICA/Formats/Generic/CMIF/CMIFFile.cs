@@ -22,7 +22,7 @@ namespace SPICA.Formats.Generic.CMIF
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 5;
+        public const int READER_VERSION = 6;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
@@ -426,9 +426,37 @@ namespace SPICA.Formats.Generic.CMIF
 
             byte[] Output = new byte[Buffer.Length];
 
+            H3DMetaData metaData;
+            if (fileVersion >= 6)
+            {
+                metaData = readMetaData(dis);
+            }
+            else
+            {
+                metaData = new H3DMetaData();
+            }
+
             int Stride = width * 4;
 
             PICATextureFormat Format = PICATextureFormat.ETC1;
+            if (metaData.Contains("DesiredTextureFormat"))
+            {
+                CMIFTextureFormat CMIFFormat = (CMIFTextureFormat)metaData[metaData.Find("DesiredTextureFormat")].Values[0];
+                switch (CMIFFormat)
+                {
+                    case CMIFTextureFormat.ETC1:
+                        Format = PICATextureFormat.ETC1;
+                        break;
+                    case CMIFTextureFormat.RGB_A:
+                        Format = PICATextureFormat.RGB8;
+                        break;
+                    case CMIFTextureFormat.RGB565:
+                        Format = PICATextureFormat.RGB565;
+                        break;
+                }
+            }
+
+            bool FoundAlpha = false;
 
             for (int Y = 0; Y < height; Y++)
             {
@@ -441,9 +469,18 @@ namespace SPICA.Formats.Generic.CMIF
                     Output[OOffs + 1] = Buffer[IOffs + 1];
                     Output[OOffs + 2] = Buffer[IOffs + 0];
                     Output[OOffs + 3] = Buffer[IOffs + 3];
-                    if (Output[OOffs + 3] != 255)
+                    if (!FoundAlpha && Output[OOffs + 3] != 255)
                     {
-                        Format = PICATextureFormat.ETC1A4;
+                        switch (Format)
+                        {
+                            case PICATextureFormat.ETC1:
+                                Format = PICATextureFormat.ETC1A4;
+                                break;
+                            case PICATextureFormat.RGB8:
+                                Format = PICATextureFormat.RGBA8;
+                                break;
+                        }
+                        FoundAlpha = true;
                     }
 
                     IOffs += 4;
@@ -691,6 +728,21 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.MetaData = new H3DMetaData();
                 }
 
+                if (mat.MaterialParams.ShaderReference.Contains("PokePack"))
+                {
+                    mat.MaterialParams.FresnelSelector = H3DFresnelSelector.Sec;
+                    mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
+                    mat.MaterialParams.LUTInputSelection.ReflecR = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecG = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecB = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
+                    mat.MaterialParams.LUTReflecGTableName = "LookupTableSetContentCtrName";
+                    mat.MaterialParams.LUTReflecBTableName = "LookupTableSetContentCtrName";
+                    mat.MaterialParams.LUTReflecRSamplerName = "Default_Lta_7D.tga";
+                    mat.MaterialParams.LUTReflecGSamplerName = "pm0001_00_Hta.tga";
+                    mat.MaterialParams.LUTReflecBSamplerName = "LinerTable.tga";
+                    mat.MaterialParams.TranslucencyKind = H3DTranslucencyKind.LayerConfig4;
+                }
                 //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat, Newtonsoft.Json.Formatting.Indented));
                 m.Materials.Add(mat);
             }
@@ -1013,6 +1065,7 @@ namespace SPICA.Formats.Generic.CMIF
                         SubMeshes.Add(SM);
                     }
                 }
+
                 H3DMesh mesh = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
                 {
                     Skinning = H3DMeshSkinning.Smooth,
@@ -1093,6 +1146,13 @@ namespace SPICA.Formats.Generic.CMIF
             }
 
             return meta;
+        }
+
+        public enum CMIFTextureFormat
+        {
+            ETC1,
+            RGB_A,
+            RGB565
         }
 
         public enum MetaDataValueType

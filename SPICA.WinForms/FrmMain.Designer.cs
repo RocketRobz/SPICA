@@ -79,6 +79,8 @@
             this.VisAnimsList = new SPICA.WinForms.GUI.SUIList();
             this.TabPageCamAnims = new System.Windows.Forms.TabPage();
             this.CamAnimsList = new SPICA.WinForms.GUI.SUIList();
+            this.TabPageLUTs = new System.Windows.Forms.TabPage();
+            this.LUTsList = new SPICA.WinForms.GUI.SUIList();
             this.SideIcons = new System.Windows.Forms.ToolStrip();
             this.ToolButtonExport = new System.Windows.Forms.ToolStripButton();
             this.ToolButtonImport = new System.Windows.Forms.ToolStripButton();
@@ -108,6 +110,7 @@
             this.TabPageMatAnims.SuspendLayout();
             this.TabPageVisAnims.SuspendLayout();
             this.TabPageCamAnims.SuspendLayout();
+            this.TabPageLUTs.SuspendLayout();
             this.SideIcons.SuspendLayout();
             this.TopIcons.SuspendLayout();
             this.SuspendLayout();
@@ -410,6 +413,7 @@
             this.SideTabs.Controls.Add(this.TabPageMatAnims);
             this.SideTabs.Controls.Add(this.TabPageVisAnims);
             this.SideTabs.Controls.Add(this.TabPageCamAnims);
+            this.SideTabs.Controls.Add(this.TabPageLUTs);
             this.SideTabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SideTabs.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SideTabs.ForegroundColor = System.Drawing.Color.White;
@@ -682,6 +686,33 @@
             this.CamAnimsList.TabIndex = 5;
             this.CamAnimsList.Selected += new System.EventHandler(this.CamAnimsList_Selected);
             // 
+            // TabPageLUTs
+            // 
+            this.TabPageLUTs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(53)))), ((int)(((byte)(48)))));
+            this.TabPageLUTs.Controls.Add(this.LUTsList);
+            this.TabPageLUTs.Location = new System.Drawing.Point(4, 28);
+            this.TabPageLUTs.Name = "TabPageLUTs";
+            this.TabPageLUTs.Size = new System.Drawing.Size(234, 414);
+            this.TabPageLUTs.TabIndex = 8;
+            this.TabPageLUTs.Text = "LUT";
+            // 
+            // LUTsList
+            // 
+            this.LUTsList.BackColor = System.Drawing.Color.Transparent;
+            this.LUTsList.BarColor = System.Drawing.Color.White;
+            this.LUTsList.BarColorHover = System.Drawing.Color.Gray;
+            this.LUTsList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LUTsList.ForeColor = System.Drawing.Color.White;
+            this.LUTsList.ItemHeight = 16;
+            this.LUTsList.Location = new System.Drawing.Point(0, 0);
+            this.LUTsList.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.LUTsList.MultiSelect = false;
+            this.LUTsList.Name = "LUTsList";
+            this.LUTsList.SelectedIndex = -1;
+            this.LUTsList.SelectionColor = System.Drawing.Color.Orange;
+            this.LUTsList.Size = new System.Drawing.Size(234, 414);
+            this.LUTsList.TabIndex = 0;
+            // 
             // SideIcons
             // 
             this.SideIcons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(73)))), ((int)(((byte)(66)))), ((int)(((byte)(61)))));
@@ -880,6 +911,7 @@
             this.TabPageMatAnims.ResumeLayout(false);
             this.TabPageVisAnims.ResumeLayout(false);
             this.TabPageCamAnims.ResumeLayout(false);
+            this.TabPageLUTs.ResumeLayout(false);
             this.SideIcons.ResumeLayout(false);
             this.SideIcons.PerformLayout();
             this.TopIcons.ResumeLayout(false);
@@ -954,5 +986,7 @@
         private System.Windows.Forms.TabPage TabPageLights;
         private GUI.SUIList LightsList;
         private System.Windows.Forms.ToolStripButton ToolButtonRemove;
+        private System.Windows.Forms.TabPage TabPageLUTs;
+        private GUI.SUIList LUTsList;
     }
 }
