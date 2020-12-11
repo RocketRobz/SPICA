@@ -166,6 +166,17 @@ namespace SPICA.PICA.Converters
                 R | (R >> 5));
         }
 
+        private static void EncodeRGBA5551(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            uint RGBA = GetUInt(Input, InputAddress);
+
+            byte ARG = (byte)((((RGBA & 0xFF000000) > 0) ? 1 : 0) | (RGBA >> 2 & 0x3E) | (RGBA >> 5 & 0xC0));
+            byte GB = (byte)((RGBA >> 13 & 0x7) | (RGBA >> 16 & 0xF8));
+
+            Output[OutputAddress] = ARG;
+            Output[OutputAddress + 1] = GB;
+        }
+
         private static void DecodeRGB565(byte[] Buffer, int Address, ushort Value)
         {
             int R = ((Value >> 0) & 0x1f) << 3;
@@ -199,6 +210,15 @@ namespace SPICA.PICA.Converters
                 B | (B << 4),
                 G | (G << 4),
                 R | (R << 4));
+        }
+
+        private static void EncodeRGBA4(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            byte GB = (byte)((Input[InputAddress + 2] & 0xF0) | (Input[InputAddress + 1] >> 4 & 0x0F));
+            byte AR = (byte)((Input[InputAddress] & 0xF0) | (Input[InputAddress + 3] >> 4 & 0x0F));
+
+            Output[OutputAddress] = AR;
+            Output[OutputAddress + 1] = GB;
         }
 
         private static void SetColor(byte[] Buffer, int Address, int A, int B, int G, int R)
@@ -260,6 +280,12 @@ namespace SPICA.PICA.Converters
 
             byte[] Output = new byte[CalculateLength(Img.Width, Img.Height, Format)];
 
+            int BPP = FmtBPP[(int)Format] / 8;
+            if (BPP == 0)
+            {
+                BPP = 1;
+            }
+
             int OOffs = 0;
 
             if (Format == PICATextureFormat.ETC1 ||
@@ -285,7 +311,6 @@ namespace SPICA.PICA.Converters
                                 case PICATextureFormat.RGB8:
                                     Array.Copy(Input, IOffs, Output, OOffs, 3);
 
-                                    OOffs += 3;
                                     break;
                                 case PICATextureFormat.RGBA8:
                                     Output[OOffs + 0] = Input[IOffs + 3];
@@ -293,16 +318,57 @@ namespace SPICA.PICA.Converters
                                     Output[OOffs + 2] = Input[IOffs + 1];
                                     Output[OOffs + 3] = Input[IOffs + 2];
 
-                                    OOffs += 4;
                                     break;
                                 case PICATextureFormat.RGB565:
                                     EncodeRGB565(Input, IOffs, Output, OOffs);
 
-                                    OOffs += 2;
+                                    break;
+                                case PICATextureFormat.L8:
+                                    Output[OOffs] = GetLuminosity(Input, IOffs);
+
+                                    break;
+                                case PICATextureFormat.A8:
+                                    Output[OOffs] = Input[IOffs + 3];
+
+                                    break;
+                                case PICATextureFormat.LA8:
+                                    Output[OOffs] = GetLuminosity(Input, IOffs);
+                                    Output[OOffs + 1] = Input[IOffs + 3];
+                                    
+                                    break;
+                                case PICATextureFormat.HiLo8:
+                                    Array.Copy(Input, IOffs, Output, OOffs, 2);
+                                    break;
+                                case PICATextureFormat.RGBA4:
+                                    EncodeRGBA4(Input, IOffs, Output, OOffs);
+
+                                    break;
+                                case PICATextureFormat.RGBA5551:
+                                    EncodeRGBA5551(Input, IOffs, Output, OOffs);
+
+                                    break;
+                                case PICATextureFormat.L4:
+                                    {
+                                        int ActualOOffs = OOffs / 2;
+                                        int Shift = (OOffs & 1) * 4;
+                                        Output[ActualOOffs] |= (byte)((GetLuminosity(Input, IOffs) >> 4 & 0xF) << Shift);
+                                    }
+                                    break;
+                                case PICATextureFormat.A4:
+                                    {
+                                        int ActualOOffs = OOffs / 2;
+                                        int Shift = (OOffs & 1) * 4;
+                                        Output[ActualOOffs] |= (byte)((Input[IOffs + 3] >> 4 & 0xF) << Shift);
+                                    }
+                                    break;
+                                case PICATextureFormat.LA4:
+                                    Output[OOffs] = (byte)(GetLuminosity(Input, IOffs) & 0xF0 | (Input[IOffs + 3] >> 4 & 0xf));
                                     break;
 
                                 default: throw new NotImplementedException();
                             }
+
+                            OOffs += BPP;
                         }
                     }
                 }
@@ -322,6 +388,10 @@ namespace SPICA.PICA.Converters
             { 47, 183, -47, -183 }
         };
 
+        public static byte GetLuminosity(byte[] RGBA, int IOffs)
+        {
+            return (byte)((RGBA[IOffs] + RGBA[IOffs + 1] + RGBA[IOffs + 2]) / 3);
+        }
 
         public static byte[] ETC1_Encode(Bitmap img, PICATextureFormat format)
         {

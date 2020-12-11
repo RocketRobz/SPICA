@@ -65,7 +65,7 @@ namespace SPICA.Formats.CtrH3D.Texture
             {
                 Name = withoutExtension ? Path.GetFileNameWithoutExtension(FileName) : Path.GetFileName(FileName);
 
-                if (desiredFormat == null || !IsFormatEncodingSupported((PICATextureFormat)desiredFormat))
+                if (desiredFormat == null)
                 {
                     Format = Image.IsAlphaPixelFormat(Img.PixelFormat) ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
                 }
@@ -73,8 +73,6 @@ namespace SPICA.Formats.CtrH3D.Texture
                 {
                     Format = (PICATextureFormat)desiredFormat;
                 }
-
-                //Format = PICATextureFormat.RGBA8;
 
                 if (Format == PICATextureFormat.ETC1A4)
                 {
@@ -105,19 +103,6 @@ namespace SPICA.Formats.CtrH3D.Texture
             }
         }
 
-        private bool IsFormatEncodingSupported(PICATextureFormat format)
-        {
-            switch (format)
-            {
-                case PICATextureFormat.ETC1:
-                case PICATextureFormat.ETC1A4:
-                case PICATextureFormat.RGB565:
-                case PICATextureFormat.RGBA8:
-                case PICATextureFormat.RGB8:
-                    return true;
-            }
-            return false;
-        }
         public H3DTexture(string Name, Bitmap Img, PICATextureFormat Format = 0)
         {
             this.Name   = Name;
