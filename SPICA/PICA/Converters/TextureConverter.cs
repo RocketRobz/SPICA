@@ -965,7 +965,7 @@ namespace SPICA.PICA.Converters
         {
             Rectangle Rect = new Rectangle(0, 0, Img.Width, Img.Height);
 
-            BitmapData ImgData = Img.LockBits(Rect, ImageLockMode.ReadOnly, Img.PixelFormat);
+            BitmapData ImgData = Img.LockBits(Rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
             byte[] Output = new byte[ImgData.Stride * Img.Height];
 
