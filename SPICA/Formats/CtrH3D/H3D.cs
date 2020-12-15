@@ -147,7 +147,47 @@ namespace SPICA.Formats.CtrH3D
                 }));*/
             }
 
+            /*RGBA DesiredOuterFireColor = new RGBA(0, 255, 0, 255); //Change this to whatever color you want the fire to be
+            RGBA DesiredInnerFireColor = new RGBA(0, 128, 0, 255); //Change these to whatever color you want the fire to be
+
+            foreach (H3DModel Model in Scene.Models)
+            {
+                foreach (H3DMaterial Material in Model.Materials)
+                {
+                    if (Material.Name.Equals("FireStenA"))
+                    {
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(0), Material.MaterialParams, DesiredOuterFireColor);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(1), Material.MaterialParams, DesiredInnerFireColor);
+                    }
+                }
+            }*/
+
             return Scene;
+        }
+
+        private static void SetConstantColor(int id, H3DMaterialParams mparams, RGBA target)
+        {
+            switch (id)
+            {
+                case 0:
+                    mparams.Constant0Color = target;
+                    break;
+                case 1:
+                    mparams.Constant1Color = target;
+                    break;
+                case 2:
+                    mparams.Constant2Color = target;
+                    break;
+                case 3:
+                    mparams.Constant3Color = target;
+                    break;
+                case 4:
+                    mparams.Constant4Color = target;
+                    break;
+                case 5:
+                    mparams.Constant5Color = target;
+                    break;
+            }
         }
 
         public static void Save(string FileName, H3D Scene)

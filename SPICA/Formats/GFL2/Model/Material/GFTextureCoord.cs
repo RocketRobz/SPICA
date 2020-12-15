@@ -1,4 +1,5 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Math3D;
 
 using System.IO;
@@ -45,6 +46,27 @@ namespace SPICA.Formats.GFL2.Model.Material
             MinFilter = (GFMinFilter)Reader.ReadUInt32(); //Not sure
 
             MinLOD = Reader.ReadUInt32(); //Not sure
+        }
+
+        public GFTextureCoord(H3DTextureCoord Coord, H3DTextureMapper Mapper, string TextureName, byte UnitIndex)
+        {
+            Name = TextureName;
+            
+            this.UnitIndex = UnitIndex;
+            
+            MappingType = (GFTextureMappingType)Coord.MappingType;
+            
+            Scale = Coord.Scale;
+            Rotation = Coord.Rotation;
+            Translation = Coord.Translation;
+            
+            WrapU = (GFTextureWrap)Mapper.WrapU;
+            WrapV = (GFTextureWrap)Mapper.WrapV;
+            
+            MagFilter = (GFMagFilter)Mapper.MagFilter;
+            MinFilter = (GFMinFilter)Mapper.MinFilter;
+            
+            MinLOD = Mapper.MinLOD;
         }
 
         public Matrix3x4 GetTransform()

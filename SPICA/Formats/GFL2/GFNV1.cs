@@ -30,6 +30,10 @@ namespace SPICA.Formats.GFL2
                     Hash(Character);
                 }
             }
+            else
+            {
+                HashCode = 0;
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using SPICA.Formats.Common;
 using SPICA.Formats.CtrH3D;
+using SPICA.Formats.CtrH3D.LUT;
 using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Formats.CtrH3D.Model.Mesh;
@@ -117,6 +118,98 @@ namespace SPICA.Formats.GFL2.Model
                     }
                 }
             }
+        }
+
+        public GFModel(H3DModel mdl, H3DDict<H3DLUT> H3DLUTs) : this()
+        {
+            Name = mdl.Name;
+
+            foreach (H3DBone Bone in mdl.Skeleton)
+            {
+                Skeleton.Add(new GFBone(Bone, mdl.Skeleton));
+            }
+
+            foreach (H3DMaterial Material in mdl.Materials)
+            {
+                H3DMesh Mesh = null;
+                foreach (H3DMesh M in mdl.Meshes)
+                {
+                    if (mdl.Materials[M.MaterialIndex] == Material)
+                    {
+                        Mesh = M;
+                        break;
+                    }
+                }
+                Materials.Add(new GFMaterial(Material, Mesh));
+            }
+
+            Transform = mdl.WorldTransform;
+
+            PokemonBBoxGen.CreateModelBBox(mdl);
+            H3DMetaDataValue BBox = mdl.MetaData[mdl.MetaData.Find(PokemonBBoxGen.BBOX_MIN_MAX)];
+            List<float> BBoxMinMax = (List<float>)BBox.Values;
+            BBoxMinVector = new Vector4(BBoxMinMax[0], BBoxMinMax[1], BBoxMinMax[2], 1);
+            BBoxMaxVector = new Vector4(BBoxMinMax[3], BBoxMinMax[4], BBoxMinMax[5], 1);
+
+            foreach (H3DLUT LUT in H3DLUTs)
+            {
+                if (LUT.Name.Equals(DefaultLUTName))
+                {
+                    foreach (H3DLUTSampler Sampler in LUT.Samplers)
+                    {
+                        LUTs.Add(new GFLUT()
+                        {
+                            Type = GetLUTType(Sampler.Name, mdl.Materials),
+                            Name = Sampler.Name,
+                            Table = Sampler.Table
+                        });
+                    }
+                }
+            }
+
+            foreach (H3DMesh Mesh in mdl.Meshes)
+            {
+                Meshes.Add(new GFMesh(Mesh, mdl));
+            }
+        }
+
+        private static PICALUTType GetLUTType(string SamplerName, H3DDict<H3DMaterial> Materials)
+        {
+            PICALUTType Type = PICALUTType.ReflecR;
+            foreach (H3DMaterial Mat in Materials)
+            {
+                if (Mat.MaterialParams.LUTReflecRSamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.ReflecR;
+                    break;
+                }
+                else if (Mat.MaterialParams.LUTReflecGSamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.ReflecG;
+                    break;
+                }
+                else if (Mat.MaterialParams.LUTReflecBSamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.ReflecB;
+                    break;
+                }
+                else if (Mat.MaterialParams.LUTFresnelSamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.Fresnel;
+                    break;
+                }
+                else if (Mat.MaterialParams.LUTDist0SamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.Dist0;
+                    break;
+                }
+                else if (Mat.MaterialParams.LUTDist1SamplerName.Equals(SamplerName))
+                {
+                    Type = PICALUTType.Dist1;
+                    break;
+                }
+            }
+            return Type;
         }
 
         private GFHashName[] ReadHashTable(BinaryReader Reader)
@@ -408,6 +501,10 @@ namespace SPICA.Formats.GFL2.Model
                     Params.BumpTexture = (byte)Material.BumpTexture;
                     Params.BumpMode = H3DBumpMode.AsBump;
                 }
+
+                Params.TexEnvStages[0] = PICATexEnvStage.Texture0;
+                Params.TexEnvStages[0].Source.Color[0] = PICATextureCombinerSource.PrimaryColor;
+                Params.TexEnvStages[0].Source.Alpha[0] = PICATextureCombinerSource.PrimaryColor;
 
                 Params.Constant0Assignment = Material.Constant0Assignment;
                 Params.Constant1Assignment = Material.Constant1Assignment;

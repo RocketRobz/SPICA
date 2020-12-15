@@ -1,4 +1,6 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D.Model.Material;
+using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.Math3D;
 using SPICA.PICA;
 using SPICA.PICA.Commands;
@@ -126,6 +128,90 @@ namespace SPICA.Formats.GFL2.Model.Material
             BorderColor = new RGBA[3];
 
             TextureSources = new float[4];
+        }
+
+        public GFMaterial(H3DMaterial Mat, H3DMesh Mesh = null) : this()
+        {
+            MaterialName = Mat.Name;
+
+            BumpTexture = (sbyte)Mat.MaterialParams.BumpTexture;
+            if (Mat.MaterialParams.BumpMode == H3DBumpMode.NotUsed)
+            {
+                BumpTexture = -1;
+            }
+
+            Constant0Assignment = (byte)Mat.MaterialParams.Constant0Assignment;
+            Constant1Assignment = (byte)Mat.MaterialParams.Constant1Assignment;
+            Constant2Assignment = (byte)Mat.MaterialParams.Constant2Assignment;
+            Constant3Assignment = (byte)Mat.MaterialParams.Constant3Assignment;
+            Constant4Assignment = (byte)Mat.MaterialParams.Constant4Assignment;
+            Constant5Assignment = (byte)Mat.MaterialParams.Constant5Assignment;
+
+            Constant0Color = Mat.MaterialParams.Constant0Color;
+            Constant1Color = Mat.MaterialParams.Constant1Color;
+            Constant2Color = Mat.MaterialParams.Constant2Color;
+            Constant3Color = Mat.MaterialParams.Constant3Color;
+            Constant4Color = Mat.MaterialParams.Constant4Color;
+            Constant5Color = Mat.MaterialParams.Constant5Color;
+
+            BlendColor = Mat.MaterialParams.BlendColor;
+            EmissionColor = Mat.MaterialParams.EmissionColor;
+            AmbientColor = Mat.MaterialParams.AmbientColor;
+            DiffuseColor = Mat.MaterialParams.DiffuseColor;
+
+            ColorOperation = Mat.MaterialParams.ColorOperation;
+            AlphaTest = Mat.MaterialParams.AlphaTest;
+            BlendFunction = Mat.MaterialParams.BlendFunction;
+            LogicalOperation = Mat.MaterialParams.LogicalOperation;
+            StencilTest = Mat.MaterialParams.StencilTest;
+            StencilOperation = Mat.MaterialParams.StencilOperation;
+            DepthColorMask = Mat.MaterialParams.DepthColorMask;
+            FaceCulling = Mat.MaterialParams.FaceCulling;
+            LUTInputAbsolute = Mat.MaterialParams.LUTInputAbsolute;
+            LUTInputScale = Mat.MaterialParams.LUTInputScale;
+            LUTInputSelection = Mat.MaterialParams.LUTInputSelection;
+
+            ColorBufferRead = Mat.MaterialParams.ColorBufferRead;
+            ColorBufferWrite = Mat.MaterialParams.ColorBufferWrite;
+            DepthBufferRead = Mat.MaterialParams.DepthBufferRead;
+            DepthBufferWrite = Mat.MaterialParams.DepthBufferWrite;
+            StencilBufferRead = Mat.MaterialParams.StencilBufferRead;
+            StencilBufferWrite = Mat.MaterialParams.StencilBufferWrite;
+
+            if (Mesh != null)
+            {
+                RenderLayer = Mesh.Layer;
+                RenderPriority = Mesh.Priority;
+            }
+
+            VtxShaderName = Mat.MaterialParams.ShaderReference.Substring(Mat.MaterialParams.ShaderReference.IndexOf("@") + 1);
+            FragShaderName = Mat.Name + ".gffsh";
+            TextureSources = Mat.MaterialParams.TextureSources;
+            BorderColor[0] = Mat.TextureMappers[0].BorderColor;
+            BorderColor[1] = Mat.TextureMappers[1].BorderColor;
+            BorderColor[2] = Mat.TextureMappers[2].BorderColor;
+
+            for (byte i = 0; i < 3; i++)
+            {
+                string texName = null;
+                switch (i)
+                {
+                    case 0:
+                        texName = Mat.Texture0Name;
+                        break;
+                    case 1:
+                        texName = Mat.Texture1Name;
+                        break;
+                    case 2:
+                        texName = Mat.Texture2Name;
+                        break;
+                }
+                TextureCoords[i] = new GFTextureCoord(Mat.MaterialParams.TextureCoords[i], Mat.TextureMappers[i], texName, i);
+            }
+
+            LUT0HashId = new GFHashName(Mat.MaterialParams.LUTReflecRSamplerName).Hash;
+            LUT1HashId = new GFHashName(Mat.MaterialParams.LUTReflecGSamplerName).Hash;
+            LUT2HashId = new GFHashName(Mat.MaterialParams.LUTReflecBSamplerName).Hash;
         }
 
         public GFMaterial(BinaryReader Reader) : this()

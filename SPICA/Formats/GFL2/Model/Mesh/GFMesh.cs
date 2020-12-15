@@ -1,8 +1,11 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D;
+using SPICA.Formats.CtrH3D.Model;
+using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.Math3D;
 using SPICA.PICA;
 using SPICA.PICA.Commands;
-
+using SPICA.PICA.Converters;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -42,6 +45,45 @@ namespace SPICA.Formats.GFL2.Model.Mesh
         public GFMesh()
         {
             SubMeshes = new List<GFSubMesh>();
+        }
+
+        public GFMesh(H3DMesh Mesh, H3DModel Parent) : this()
+        {
+            if (Mesh.NodeIndex >= 0 && Mesh.NodeIndex < Parent.MeshNodesTree.Count) {
+                Name = Parent.MeshNodesTree.Find(Mesh.NodeIndex);
+            }
+            else
+            {
+                Name = "Mesh_" + Parent.Meshes.IndexOf(Mesh);
+            }
+
+            if (Mesh.MetaData.Find(PokemonBBoxGen.BBOX_MIN_MAX) == -1)
+            {
+                PokemonBBoxGen.CreateModelBBox(Parent);
+            }
+            H3DMetaDataValue BBox = Mesh.MetaData[Mesh.MetaData.Find(PokemonBBoxGen.BBOX_MIN_MAX)];
+            List<float> BBoxMinMax = (List<float>)BBox.Values;
+            BBoxMinVector = new Vector4(BBoxMinMax[0], BBoxMinMax[1], BBoxMinMax[2], 1);
+            BBoxMaxVector = new Vector4(BBoxMinMax[3], BBoxMinMax[4], BBoxMinMax[5], 1);
+
+            BoneIndicesPerVertex = 4;
+
+            int SubMeshIdx = 0;
+            List<PICAVertex> Vertices = Mesh.GetVertices().ToList();
+            foreach (H3DSubMesh SubMesh in Mesh.SubMeshes)
+            {
+                string MaterialName;
+                if (Mesh.MaterialIndex >= 0 && Mesh.MaterialIndex < Parent.Materials.Count)
+                {
+                    MaterialName = Parent.Materials[Mesh.MaterialIndex].Name;
+                }
+                else
+                {
+                    MaterialName = null;
+                }
+                SubMeshes.Add(new GFSubMesh(SubMesh, Mesh, Vertices, MaterialName));
+                SubMeshIdx++;
+            }
         }
 
         public GFMesh(BinaryReader Reader) : this()

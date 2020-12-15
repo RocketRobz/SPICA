@@ -70,9 +70,10 @@ namespace SPICA.WinForms.Formats
             using (SaveFileDialog SaveDlg = new SaveFileDialog())
             {
                 SaveDlg.Filter = 
-                    "COLLADA 1.4.1|*.dae|" +
-                    "Valve StudioMdl|*.smd|" +
-                    "Binary Ctr H3D|*.bch";
+                    "COLLADA 1.4.1|*.dae" +
+                    "|Valve StudioMdl|*.smd" +
+                    "|Binary Ctr H3D|*.bch" /*+
+                    "|Game Freak Model|*.gfbmdl"*/;
 
                 SaveDlg.FileName = "Model";
 
@@ -86,6 +87,13 @@ namespace SPICA.WinForms.Formats
                         case 1: new DAE(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 2: new SMD(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 3: H3D.Save(SaveDlg.FileName, Scene); break;
+                        case 4:
+                            using (BinaryWriter writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
+                            {
+                                new GFModel(Scene.Models[State.ModelIndex], Scene.LUTs).Write(writer);
+                                writer.Close();
+                            }
+                            break;
                     }
                 }
             }
