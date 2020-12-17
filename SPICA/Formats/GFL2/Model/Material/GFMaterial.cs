@@ -1,4 +1,5 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.Math3D;
@@ -178,14 +179,58 @@ namespace SPICA.Formats.GFL2.Model.Material
             StencilBufferRead = Mat.MaterialParams.StencilBufferRead;
             StencilBufferWrite = Mat.MaterialParams.StencilBufferWrite;
 
+            H3DMetaData Meta = Mat.MaterialParams.MetaData;
+            EdgeType = GetMetaValue(Meta, "EdgeType", 0);
+            IDEdgeEnable = GetMetaValue(Meta, "IDEdgeEnable", 0);
+            EdgeID = GetMetaValue(Meta, "EdgeID", 255);
+
+            ProjectionType = GetMetaValue(Meta, "ProjectionType", 0);
+
+            RimPower = GetMetaValue(Meta, "RimPow", 0f);
+            RimScale = GetMetaValue(Meta, "RimScale", 1f);
+            PhongPower = GetMetaValue(Meta, "PhongPow", 0f);
+            PhongScale = GetMetaValue(Meta, "PhongScale", 1f);
+
+            IDEdgeOffsetEnable = GetMetaValue(Meta, "IDEdgeOffsetEnable", 0);
+
+            EdgeMapAlphaMask = GetMetaValue(Meta, "EdgeMapAlphaMask", 0);
+
+            BakeTexture0 = GetMetaValue(Meta, "BakeTexture0", 0);
+            BakeTexture1 = GetMetaValue(Meta, "BakeTexture1", 0);
+            BakeTexture2 = GetMetaValue(Meta, "BakeTexture2", 0);
+            BakeConstant0 = GetMetaValue(Meta, "BakeConstant0", 0);
+            BakeConstant1 = GetMetaValue(Meta, "BakeConstant1", 0);
+            BakeConstant2 = GetMetaValue(Meta, "BakeConstant2", 0);
+            BakeConstant3 = GetMetaValue(Meta, "BakeConstant3", 0);
+            BakeConstant4 = GetMetaValue(Meta, "BakeConstant4", 0);
+            BakeConstant5 = GetMetaValue(Meta, "BakeConstant5", 0);
+
+            VertexShaderType = GetMetaValue(Meta, "VertexShaderType", 0);
+
+            ShaderParam0 = GetMetaValue(Meta, "ShaderParam0", 0f);
+            ShaderParam1 = GetMetaValue(Meta, "ShaderParam1", 0f);
+            ShaderParam2 = GetMetaValue(Meta, "ShaderParam2", 0f);
+            ShaderParam3 = GetMetaValue(Meta, "ShaderParam3", 0f);
+
             if (Mesh != null)
             {
                 RenderLayer = Mesh.Layer;
                 RenderPriority = Mesh.Priority;
             }
 
+            if (Mat.MaterialParams.MetaData == null)
+            {
+                Mat.MaterialParams.MetaData = new H3DMetaData();
+            }
+            H3DMetaDataValue OShName = Mat.MaterialParams.MetaData.Get("OriginShaderName");
+            H3DMetaDataValue OFShName = Mat.MaterialParams.MetaData.Get("OriginFragShaderName");
+            string NewShName = OShName == null ? Name + "_SHA" : (string)OShName.Values[0];
+            string NewFShName = OFShName == null ? Name + "_SHA" : (string)OFShName.Values[0];
+
+
+            ShaderName = NewShName;
             VtxShaderName = Mat.MaterialParams.ShaderReference.Substring(Mat.MaterialParams.ShaderReference.IndexOf("@") + 1);
-            FragShaderName = Mat.Name + ".gffsh";
+            FragShaderName = NewFShName;
             TextureSources = Mat.MaterialParams.TextureSources;
             BorderColor[0] = Mat.TextureMappers[0].BorderColor;
             BorderColor[1] = Mat.TextureMappers[1].BorderColor;
@@ -212,6 +257,16 @@ namespace SPICA.Formats.GFL2.Model.Material
             LUT0HashId = new GFHashName(Mat.MaterialParams.LUTReflecRSamplerName).Hash;
             LUT1HashId = new GFHashName(Mat.MaterialParams.LUTReflecGSamplerName).Hash;
             LUT2HashId = new GFHashName(Mat.MaterialParams.LUTReflecBSamplerName).Hash;
+        }
+
+        private static T GetMetaValue<T>(H3DMetaData MetaData, string ValueName, T DefaultValue)
+        {
+            H3DMetaDataValue Val = MetaData.Get(ValueName);
+            if (Val != null)
+            {
+                return (T)Val.Values[0];
+            }
+            return DefaultValue;
         }
 
         public GFMaterial(BinaryReader Reader) : this()
@@ -314,7 +369,7 @@ namespace SPICA.Formats.GFL2.Model.Material
             }
 
             PICACommandReader CmdReader = new PICACommandReader(Commands);
-
+            
             while (CmdReader.HasCommand)
             {
                 PICACommand Cmd = CmdReader.GetCommand();

@@ -8,7 +8,7 @@ using SPICA.Formats.GFL2.Model.Material;
 using SPICA.Formats.GFL2.Model.Mesh;
 using SPICA.Math3D;
 using SPICA.PICA.Commands;
-
+using SPICA.PICA.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,9 +18,9 @@ using System.Text;
 
 namespace SPICA.Formats.GFL2.Model
 {
-    public class GFModel
+    public class GFModel : INamed
     {
-        private const uint   MagicNum = 0x15122117u;
+        public const uint   MagicNum = 0x15122117u;
         private const string MagicStr = "gfmodel";
 
         internal const string DefaultLUTName = "LookupTableSetContentCtrName";
@@ -35,6 +35,8 @@ namespace SPICA.Formats.GFL2.Model
         public readonly List<GFLUT>      LUTs;
         public readonly List<GFMaterial> Materials;
         public readonly List<GFMesh>     Meshes;
+
+        string INamed.Name { get => Name; set => Name = value; }
 
         public GFModel()
         {
@@ -178,32 +180,32 @@ namespace SPICA.Formats.GFL2.Model
             PICALUTType Type = PICALUTType.ReflecR;
             foreach (H3DMaterial Mat in Materials)
             {
-                if (Mat.MaterialParams.LUTReflecRSamplerName.Equals(SamplerName))
+                if (Mat.MaterialParams.LUTReflecRSamplerName == SamplerName)
                 {
                     Type = PICALUTType.ReflecR;
                     break;
                 }
-                else if (Mat.MaterialParams.LUTReflecGSamplerName.Equals(SamplerName))
+                else if (Mat.MaterialParams.LUTReflecGSamplerName == SamplerName)
                 {
                     Type = PICALUTType.ReflecG;
                     break;
                 }
-                else if (Mat.MaterialParams.LUTReflecBSamplerName.Equals(SamplerName))
+                else if (Mat.MaterialParams.LUTReflecBSamplerName == SamplerName)
                 {
                     Type = PICALUTType.ReflecB;
                     break;
                 }
-                else if (Mat.MaterialParams.LUTFresnelSamplerName.Equals(SamplerName))
+                else if (Mat.MaterialParams.LUTFresnelSamplerName == SamplerName)
                 {
                     Type = PICALUTType.Fresnel;
                     break;
                 }
-                else if (Mat.MaterialParams.LUTDist0SamplerName.Equals(SamplerName))
+                else if (Mat.MaterialParams.LUTDist0SamplerName == SamplerName)
                 {
                     Type = PICALUTType.Dist0;
                     break;
                 }
-                else if (Mat.MaterialParams.LUTDist1SamplerName.Equals(SamplerName))
+                else if (Mat.MaterialParams.LUTDist1SamplerName == SamplerName)
                 {
                     Type = PICALUTType.Dist1;
                     break;
@@ -242,6 +244,20 @@ namespace SPICA.Formats.GFL2.Model
 
         public void Write(BinaryWriter Writer)
         {
+            List<string> UsedNames = new List<string>();
+            foreach (GFMesh Mesh in Meshes)
+            {
+                int Num = 1;
+                string FullName = Mesh.Name;
+                while (UsedNames.Contains(FullName))
+                {
+                    FullName = Mesh.Name + "_" + Num;
+                    Num++;
+                }
+                Mesh.Name = FullName;
+                UsedNames.Add(Mesh.Name);
+            }
+
             uint SectionsCount = (uint)(Materials.Count + Meshes.Count + 1);
 
             Writer.Write(MagicNum);
@@ -567,11 +583,16 @@ namespace SPICA.Formats.GFL2.Model
                 Params.MetaData.Add(new H3DMetaDataValue("ShaderParam2", Material.ShaderParam2));
                 Params.MetaData.Add(new H3DMetaDataValue("ShaderParam3", Material.ShaderParam3));
 
+                Params.MetaData.Add(new H3DMetaDataValue("OriginShaderName", Material.ShaderName));
+                Params.MetaData.Add(new H3DMetaDataValue("OriginFragShaderName", Material.FragShaderName));
+
                 Output.Materials.Add(Mat);
             }
 
             //Meshes
             Output.MeshNodesTree = new H3DPatriciaTree();
+
+            List<H3DMesh> H3DMeshes = new List<H3DMesh>();
 
             foreach (GFMesh Mesh in Meshes)
             {
@@ -616,7 +637,8 @@ namespace SPICA.Formats.GFL2.Model
                         SubMesh.VertexStride,
                         SubMesh.Attributes, 
                         SubMesh.FixedAttributes,
-                        SubMeshes);
+                        SubMeshes
+                    );
 
                     M.Skinning = H3DMeshSkinning.Smooth;
 
@@ -629,11 +651,15 @@ namespace SPICA.Formats.GFL2.Model
                     M.Layer         = Mat.RenderLayer;
                     M.Priority      = Mat.RenderPriority;
 
+
                     M.UpdateBoolUniforms(Output.Materials[MatIndex]);
 
-                    Output.AddMesh(M);
+                    H3DMeshes.Add(M);
                 }
             }
+            H3DMeshes = H3DMeshes.OrderBy(Mesh => Mesh.Layer).ToList();
+            Output.AddMeshes(H3DMeshes);
+            Output.MeshNodesCount = H3DMeshes.Count;
 
             return Output;
         }

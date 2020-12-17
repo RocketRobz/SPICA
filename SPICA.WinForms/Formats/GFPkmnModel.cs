@@ -53,7 +53,7 @@ namespace SPICA.WinForms.Formats
                     {
                         Input.Seek(Entry.Address, SeekOrigin.Begin);
 
-                        MdlPack.Shaders.Add(new GFShader(Reader));
+                        MdlPack.MaterialShaders.Add(new GFShader(Reader));
                     }
 
                     //More shaders
@@ -67,7 +67,7 @@ namespace SPICA.WinForms.Formats
                         {
                             Input.Seek(Entry.Address, SeekOrigin.Begin);
 
-                            MdlPack.Shaders.Add(new GFShader(Reader));
+                            MdlPack.MaterialShaders.Add(new GFShader(Reader));
                         }
                     }
 

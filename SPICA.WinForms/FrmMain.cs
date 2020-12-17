@@ -98,33 +98,35 @@ namespace SPICA.WinForms
 
                 Scene = FileIO.Merge(Files, Renderer);
 
-                TextureManager.Textures = Scene.Textures;
-
-                ModelsList.Bind(Scene.Models);
-                TexturesList.Bind(Scene.Textures);
-                CamerasList.Bind(Scene.Cameras);
-                LightsList.Bind(Scene.Lights);
-                SklAnimsList.Bind(Scene.SkeletalAnimations);
-                MatAnimsList.Bind(Scene.MaterialAnimations);
-                VisAnimsList.Bind(Scene.VisibilityAnimations);
-                CamAnimsList.Bind(Scene.CameraAnimations);
-                LUTsList.Bind(Scene.LUTs);
-
-                Animator.Enabled     = false;
-                LblAnimSpeed.Text    = string.Empty;
-                LblAnimLoopMode.Text = string.Empty;
-                AnimSeekBar.Value    = 0;
-                AnimSeekBar.Maximum  = 0;
-                AnimGrp.Frame        = 0;
-                AnimGrp.FramesCount  = 0;
-
-                if (Scene.Models.Count > 0)
+                if (Scene != null)
                 {
-                    ModelsList.Select(0);
-                }
-                else
-                {
-                    UpdateTransforms();
+                    TextureManager.Textures = Scene.Textures;
+                    ModelsList.Bind(Scene.Models);
+                    TexturesList.Bind(Scene.Textures);
+                    CamerasList.Bind(Scene.Cameras);
+                    LightsList.Bind(Scene.Lights);
+                    SklAnimsList.Bind(Scene.SkeletalAnimations);
+                    MatAnimsList.Bind(Scene.MaterialAnimations);
+                    VisAnimsList.Bind(Scene.VisibilityAnimations);
+                    CamAnimsList.Bind(Scene.CameraAnimations);
+                    LUTsList.Bind(Scene.LUTs);
+
+                    Animator.Enabled = false;
+                    LblAnimSpeed.Text = string.Empty;
+                    LblAnimLoopMode.Text = string.Empty;
+                    AnimSeekBar.Value = 0;
+                    AnimSeekBar.Maximum = 0;
+                    AnimGrp.Frame = 0;
+                    AnimGrp.FramesCount = 0;
+
+                    if (Scene.Models.Count > 0)
+                    {
+                        ModelsList.Select(0);
+                    }
+                    else
+                    {
+                        UpdateTransforms();
+                    }
                 }
             }
             else

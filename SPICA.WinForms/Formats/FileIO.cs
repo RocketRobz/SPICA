@@ -1,9 +1,12 @@
 ﻿using SPICA.Formats;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Model;
+using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Formats.Generic.COLLADA;
 using SPICA.Formats.Generic.StudioMdl;
+using SPICA.Formats.GFL2;
 using SPICA.Formats.GFL2.Model;
+using SPICA.Formats.GFL2.Texture;
 using SPICA.Rendering;
 
 using System.IO;
@@ -72,8 +75,9 @@ namespace SPICA.WinForms.Formats
                 SaveDlg.Filter = 
                     "COLLADA 1.4.1|*.dae" +
                     "|Valve StudioMdl|*.smd" +
-                    "|Binary Ctr H3D|*.bch" /*+
-                    "|Game Freak Model|*.gfbmdl"*/;
+                    "|Binary Ctr H3D|*.bch" +
+                    "|Game Freak Binary Model|*.gfbmdl" + 
+                    "|Game Freak Binary Model Pack|*.gfbmdlp";
 
                 SaveDlg.FileName = "Model";
 
@@ -88,10 +92,18 @@ namespace SPICA.WinForms.Formats
                         case 2: new SMD(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 3: H3D.Save(SaveDlg.FileName, Scene); break;
                         case 4:
-                            using (BinaryWriter writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
+                            using (BinaryWriter Writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
                             {
-                                new GFModel(Scene.Models[State.ModelIndex], Scene.LUTs).Write(writer);
-                                writer.Close();
+                                new GFModel(Scene.Models[State.ModelIndex], Scene.LUTs).Write(Writer);
+                                Writer.Close();
+                            }
+                            break;
+                        case 5:
+                            using (BinaryWriter Writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
+                            {
+                                GFModelPack ModelPack = new GFModelPack(Scene);
+                                ModelPack.Write(Writer);
+                                Writer.Close();
                             }
                             break;
                     }

@@ -34,6 +34,8 @@ namespace SPICA.Formats.CtrH3D
 
     public class H3D : ICustomSerialization
     {
+        [Ignore] public List<object> SourceData = new List<object>();
+
         public readonly H3DDict<H3DModel>          Models;
         public readonly H3DDict<H3DMaterialParams> Materials;
         public readonly H3DDict<H3DShader>         Shaders;
@@ -110,9 +112,9 @@ namespace SPICA.Formats.CtrH3D
 
             Scene.Flags = Header.Flags;
 
-            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings()
+            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             }));*/
 
             if (Scene.Models.Count > 0)
@@ -291,6 +293,8 @@ namespace SPICA.Formats.CtrH3D
             AddUnique(SceneData.CameraAnimations,     CameraAnimations);
             AddUnique(SceneData.FogAnimations,        FogAnimations);
             AddUnique(SceneData.Scenes,               Scenes);
+
+            SourceData.AddRange(SceneData.SourceData);
         }
 
         private void AddUnique<T>(H3DDict<T> Src, H3DDict<T> Tgt) where T : INamed

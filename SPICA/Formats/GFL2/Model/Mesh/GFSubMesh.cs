@@ -38,7 +38,7 @@ namespace SPICA.Formats.GFL2.Model.Mesh
             FixedAttributes = new List<PICAFixedAttribute>();            
         }
 
-        public GFSubMesh(H3DSubMesh SubMesh, H3DMesh Parent, List<PICAVertex> Vertices, string Name)
+        public GFSubMesh(H3DSubMesh SubMesh, H3DMesh Parent, List<PICAVertex> Vertices, string Name) : this()
         {
             this.Name = Name;
             BoneIndicesCount = (byte)SubMesh.BoneIndicesCount;
@@ -63,20 +63,38 @@ namespace SPICA.Formats.GFL2.Model.Mesh
             VertexStride = Parent.VertexStride;
             
             Attributes = Parent.Attributes;
-            FixedAttributes = Parent.FixedAttributes;
+
+            foreach (PICAFixedAttribute Old in Parent.FixedAttributes)
+            {
+                float Scale =
+                        Old.Name == PICAAttributeName.Color ||
+                        Old.Name == PICAAttributeName.BoneWeight ? GFMesh.Scales[1] : 1;
+                PICAFixedAttribute New = new PICAFixedAttribute()
+                {
+                    Name = Old.Name,
+                    Value = Old.Value / Scale
+                };
+                FixedAttributes.Add(New);
+            }
 
             List<PICAVertex> NewVertices = new List<PICAVertex>();
+            Dictionary<ushort, ushort> OldNewIndexMap = new Dictionary<ushort, ushort>();
             ushort[] NewIndices = new ushort[Indices.Length];
+
             for (int i = 0; i < NewIndices.Length; i++)
             {
-                PICAVertex Vertex = Vertices[Indices[i]];
-                int NewIndex = NewVertices.IndexOf(Vertex);
-                if (NewIndex == -1)
+                if (OldNewIndexMap.ContainsKey(Indices[i]))
                 {
-                    NewIndex = NewVertices.Count;
-                    NewVertices.Add(Vertex);
+                    NewIndices[i] = OldNewIndexMap[Indices[i]];
                 }
-                NewIndices[i] = (ushort)NewIndex; 
+                else
+                {
+                    PICAVertex Vertex = Vertices[Indices[i]];
+                    ushort NewIndex = (ushort)NewVertices.Count;
+                    NewVertices.Add(Vertex);
+                    NewIndices[i] = NewIndex;
+                    OldNewIndexMap.Add(Indices[i], NewIndex);
+                }
             }
 
             Indices = NewIndices;

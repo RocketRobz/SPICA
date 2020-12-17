@@ -17,7 +17,7 @@ namespace SPICA.Formats.GFL2.Model.Mesh
     {
         private const string MagicStr = "mesh";
 
-        private static float[] Scales =
+        public static float[] Scales =
         {
             1f / sbyte.MaxValue,
             1f / byte.MaxValue,
@@ -67,8 +67,6 @@ namespace SPICA.Formats.GFL2.Model.Mesh
             BBoxMaxVector = new Vector4(BBoxMinMax[3], BBoxMinMax[4], BBoxMinMax[5], 1);
 
             BoneIndicesPerVertex = 4;
-
-            int SubMeshIdx = 0;
             List<PICAVertex> Vertices = Mesh.GetVertices().ToList();
             foreach (H3DSubMesh SubMesh in Mesh.SubMeshes)
             {
@@ -82,7 +80,6 @@ namespace SPICA.Formats.GFL2.Model.Mesh
                     MaterialName = null;
                 }
                 SubMeshes.Add(new GFSubMesh(SubMesh, Mesh, Vertices, MaterialName));
-                SubMeshIdx++;
             }
         }
 
@@ -382,7 +379,6 @@ namespace SPICA.Formats.GFL2.Model.Mesh
                 for (int Attr = 0; Attr < SM.FixedAttributes.Count; Attr++)
                 {
                     PICAFixedAttribute Attrib = SM.FixedAttributes[Attr];
-
                     CmdWriter.SetCommand(PICARegister.GPUREG_FIXEDATTRIB_INDEX, true,
                         (uint)(SM.Attributes.Count + Attr),
                         Attrib.Value.Word0,

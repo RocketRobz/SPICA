@@ -151,21 +151,23 @@ namespace SPICA.WinForms.Formats
                         {
                             switch (MagicNum)
                             {
-                                case 0x15122117:
+                                case GFModel.MagicNum:
                                     Output = new H3D();
 
                                     Output.Models.Add(new GFModel(Reader, "Model").ToH3DModel());
 
                                     break;
 
-                                case 0x15041213:
+                                case GFTexture.MagicNum:
                                     Output = new H3D();
 
                                     Output.Textures.Add(new GFTexture(Reader).ToH3DTexture());
 
                                     break;
 
-                                case 0x00010000: Output = new GFModelPack(Reader).ToH3D(); break;
+                                case GFModelPack.MagicNum:
+                                    Output = new GFModelPack(Reader).ToH3D(); 
+                                    break;
                                 case 0x00060000:
                                     if (Skeleton != null)
                                     {
