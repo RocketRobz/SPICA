@@ -319,7 +319,7 @@ namespace SPICA.Formats.GFL2.Model
             GFSection.SkipPadding(Writer.BaseStream);
 
             Writer.Write(LUTs.Count);
-            Writer.Write(0x420);
+            Writer.Write(LUTs.Count > 0 ? 0x420 : 0);
 
             GFSection.SkipPadding(Writer.BaseStream);
 
@@ -456,14 +456,14 @@ namespace SPICA.Formats.GFL2.Model
                 Params.EmissionColor  = Material.EmissionColor;
                 Params.AmbientColor   = Material.AmbientColor;
                 Params.DiffuseColor   = Material.DiffuseColor;
-                Params.Specular0Color = Material.Specular0Color;
-                Params.Specular1Color = Material.Specular1Color;
                 Params.Constant0Color = Material.Constant0Color;
                 Params.Constant1Color = Material.Constant1Color;
                 Params.Constant2Color = Material.Constant2Color;
                 Params.Constant3Color = Material.Constant3Color;
                 Params.Constant4Color = Material.Constant4Color;
                 Params.Constant5Color = Material.Constant5Color;
+                Params.Specular0Color = Material.Specular0Color;
+                Params.Specular1Color = Material.Specular1Color;
                 Params.BlendColor     = Material.BlendColor;
 
                 //HACK: It's usually 0 on Sun/Moon, this causes issues on some

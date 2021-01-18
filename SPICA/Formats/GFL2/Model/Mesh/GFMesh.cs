@@ -379,11 +379,22 @@ namespace SPICA.Formats.GFL2.Model.Mesh
                 for (int Attr = 0; Attr < SM.FixedAttributes.Count; Attr++)
                 {
                     PICAFixedAttribute Attrib = SM.FixedAttributes[Attr];
+
+                    float Scale =
+                        Attrib.Name == PICAAttributeName.Color ||
+                        Attrib.Name == PICAAttributeName.BoneWeight ? GFMesh.Scales[1] : 1;
+
+                    PICAFixedAttribute ScaledAttribute = new PICAFixedAttribute()
+                    {
+                        Name = Attrib.Name,
+                        Value = new PICAVectorFloat24(Attrib.Value.X, Attrib.Value.Y, Attrib.Value.Z, Attrib.Value.W) / Scale
+                    };
+
                     CmdWriter.SetCommand(PICARegister.GPUREG_FIXEDATTRIB_INDEX, true,
                         (uint)(SM.Attributes.Count + Attr),
-                        Attrib.Value.Word0,
-                        Attrib.Value.Word1,
-                        Attrib.Value.Word2);
+                        ScaledAttribute.Value.Word0,
+                        ScaledAttribute.Value.Word1,
+                        ScaledAttribute.Value.Word2);
                 }
 
                 CmdWriter.WriteEnd();
@@ -469,7 +480,7 @@ namespace SPICA.Formats.GFL2.Model.Mesh
 
                 Writer.Write(VerticesCount);
                 Writer.Write(SM.Indices.Length);
-                Writer.Write(GetPaddedLen4(VtxBuffLen));
+                Writer.Write(GetPaddedLen16(VtxBuffLen));
                 Writer.Write(GetPaddedLen16(IdxBuffLen));
             }
 
@@ -479,10 +490,13 @@ namespace SPICA.Formats.GFL2.Model.Mesh
 
                 Writer.Write(SM.RawBuffer);
 
-                while (((Writer.BaseStream.Position - Position) & 3) != 0)
+                int VertexBufferPaddingLength = GetPaddedLen16(SM.RawBuffer.Length) - SM.RawBuffer.Length;
+                Writer.Write(new byte[VertexBufferPaddingLength]);
+
+                /*while (((Writer.BaseStream.Position - Position) & 3) != 0)
                 {
                     Writer.Write((byte)0);
-                }
+                }*/
 
                 Position = Writer.BaseStream.Position;
 
@@ -494,10 +508,13 @@ namespace SPICA.Formats.GFL2.Model.Mesh
                         Writer.Write(Idx);
                 }
 
-                while (((Writer.BaseStream.Position - Position) & 0xf) != 0)
+                /*while (((Writer.BaseStream.Position - Position) & 0xf) != 0)
                 {
                     Writer.Write((byte)0);
-                }
+                }*/
+                int IndexBufferLength = SM.Indices.Length * (SM.IsIdx8Bits ? 1 : 2);
+                int IndexBufferPaddingLength = GetPaddedLen16(IndexBufferLength) - IndexBufferLength;
+                Writer.Write(new byte[IndexBufferPaddingLength]);
             }
 
             Writer.Align(0x10, 0);

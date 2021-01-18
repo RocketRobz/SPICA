@@ -39,6 +39,9 @@ namespace SPICA.Formats.GFL2.Model.Material
         public byte Constant4Assignment;
         public byte Constant5Assignment;
 
+        public byte LightSetIndex;
+        public byte FogIndex;
+
         public RGBA Constant0Color;
         public RGBA Constant1Color;
         public RGBA Constant2Color;
@@ -148,6 +151,10 @@ namespace SPICA.Formats.GFL2.Model.Material
             Constant4Assignment = (byte)Mat.MaterialParams.Constant4Assignment;
             Constant5Assignment = (byte)Mat.MaterialParams.Constant5Assignment;
 
+            Specular0Color = Mat.MaterialParams.Specular0Color;
+            Specular1Color = Mat.MaterialParams.Specular1Color;
+            BlendColor = Mat.MaterialParams.BlendColor;
+
             Constant0Color = Mat.MaterialParams.Constant0Color;
             Constant1Color = Mat.MaterialParams.Constant1Color;
             Constant2Color = Mat.MaterialParams.Constant2Color;
@@ -155,8 +162,6 @@ namespace SPICA.Formats.GFL2.Model.Material
             Constant4Color = Mat.MaterialParams.Constant4Color;
             Constant5Color = Mat.MaterialParams.Constant5Color;
 
-            BlendColor = Mat.MaterialParams.BlendColor;
-            EmissionColor = Mat.MaterialParams.EmissionColor;
             AmbientColor = Mat.MaterialParams.AmbientColor;
             DiffuseColor = Mat.MaterialParams.DiffuseColor;
 
@@ -295,7 +300,7 @@ namespace SPICA.Formats.GFL2.Model.Material
             Constant4Assignment = Reader.ReadByte();
             Constant5Assignment = Reader.ReadByte();
 
-            Reader.ReadByte(); //8 bytes padding
+            LightSetIndex = Reader.ReadByte();
 
             Constant0Color = new RGBA(Reader);
             Constant1Color = new RGBA(Reader);
@@ -386,6 +391,8 @@ namespace SPICA.Formats.GFL2.Model.Material
 
                     case PICARegister.GPUREG_BLEND_FUNC: BlendFunction = new PICABlendFunction(Param); break;
 
+                    case PICARegister.GPUREG_BLEND_COLOR: BlendColor = new RGBA(Param); break;
+
                     case PICARegister.GPUREG_LOGIC_OP: LogicalOperation = (PICALogicalOp)(Param & 0xf); break;
 
                     case PICARegister.GPUREG_FRAGOP_ALPHA_TEST: AlphaTest = new PICAAlphaTest(Param); break;
@@ -461,10 +468,10 @@ namespace SPICA.Formats.GFL2.Model.Material
             Constant5Color.Write(Writer);
             Specular0Color.Write(Writer);
             Specular1Color.Write(Writer);
-            BlendColor    .Write(Writer);
-            EmissionColor .Write(Writer);
-            AmbientColor  .Write(Writer);
-            DiffuseColor  .Write(Writer);
+            BlendColor.Write(Writer);
+            EmissionColor.Write(Writer);
+            AmbientColor.Write(Writer);
+            DiffuseColor.Write(Writer);
 
             Writer.Write(EdgeType);
             Writer.Write(IDEdgeEnable);
@@ -599,9 +606,27 @@ namespace SPICA.Formats.GFL2.Model.Material
 
             uint[] Commands = CmdWriter.GetBuffer();
 
+            byte[] RawCommandBuffer = new byte[Commands.Length * 4];
+            MemoryStream RawCommandStream = new MemoryStream();
+            using (BinaryWriter CommandRewriter = new BinaryWriter(RawCommandStream))
+            {
+                foreach (uint Command in Commands)
+                {
+                    CommandRewriter.Write(Command);
+                }
+            }
+            RawCommandBuffer = RawCommandStream.ToArray();
+            RawCommandStream.Close();
+
+            GFNV1 CommandsFNV = new GFNV1();
+            foreach (byte CmdByte in RawCommandBuffer)
+            {
+                CommandsFNV.Hash(CmdByte);
+            }
+
             Writer.Write((uint)(Commands.Length * 4));
             Writer.Write(RenderPriority);
-            Writer.Write(0xd5738d); //FIXME: This number changes (depending on the cmd buff?)
+            Writer.Write(CommandsFNV.HashCode); //FIXME: This number changes (depending on the cmd buff?)
             Writer.Write(RenderLayer);
             Writer.Write(LUT0HashId);
             Writer.Write(LUT1HashId);

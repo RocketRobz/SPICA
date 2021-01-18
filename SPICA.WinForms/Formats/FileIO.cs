@@ -1,14 +1,16 @@
 ﻿using SPICA.Formats;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Model;
+using SPICA.Formats.CtrH3D.Shader;
 using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Formats.Generic.COLLADA;
 using SPICA.Formats.Generic.StudioMdl;
 using SPICA.Formats.GFL2;
 using SPICA.Formats.GFL2.Model;
 using SPICA.Formats.GFL2.Texture;
+using SPICA.PICA.Shader;
 using SPICA.Rendering;
-
+using SPICA.Rendering.Shaders;
 using System.IO;
 using System.Windows.Forms;
 
@@ -76,7 +78,6 @@ namespace SPICA.WinForms.Formats
                     "COLLADA 1.4.1|*.dae" +
                     "|Valve StudioMdl|*.smd" +
                     "|Binary Ctr H3D|*.bch" +
-                    "|Game Freak Binary Model|*.gfbmdl" + 
                     "|Game Freak Binary Model Pack|*.gfbmdlp";
 
                 SaveDlg.FileName = "Model";
@@ -92,13 +93,11 @@ namespace SPICA.WinForms.Formats
                         case 2: new SMD(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 3: H3D.Save(SaveDlg.FileName, Scene); break;
                         case 4:
-                            using (BinaryWriter Writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
-                            {
-                                new GFModel(Scene.Models[State.ModelIndex], Scene.LUTs).Write(Writer);
-                                Writer.Close();
-                            }
-                            break;
-                        case 5:
+                            MessageBox.Show(
+                                "GFBMDLP writing comes with no warranty whatsoever. In fact, character and Pokémon models will most certainly not work at all.\n\n(Before you ask, this dialog can not be disabled. Intentionally.)",
+                                "Disclaimer",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Exclamation);
                             using (BinaryWriter Writer = new BinaryWriter(new FileStream(SaveDlg.FileName, FileMode.Create, FileAccess.Write)))
                             {
                                 GFModelPack ModelPack = new GFModelPack(Scene);

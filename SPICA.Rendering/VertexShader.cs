@@ -18,6 +18,9 @@ namespace SPICA.Rendering
         public readonly ShaderNameBlock VtxNames;
         public readonly ShaderNameBlock GeoNames;
 
+        public string CodeVtx;
+        public string CodeGeo;
+
         public VertexShader(H3DShader Shdr)
         {
             Name = Shdr.Name;
@@ -32,9 +35,9 @@ namespace SPICA.Rendering
 
                 VertexShaderGenerator VtxShaderGen = new VertexShaderGenerator(SHBin);
 
-                string Code = VtxShaderGen.GetVtxShader(Shdr.VtxShaderIndex, HasGeometryShader, out VtxNames);
+                CodeVtx = VtxShaderGen.GetVtxShader(Shdr.VtxShaderIndex, HasGeometryShader, out VtxNames);
 
-                Shader.CompileAndCheck(VtxShaderHandle, Code);
+                Shader.CompileAndCheck(VtxShaderHandle, CodeVtx);
             }
 
             if (HasGeometryShader)
@@ -43,9 +46,9 @@ namespace SPICA.Rendering
 
                 GeometryShaderGenerator GeoShaderGen = new GeometryShaderGenerator(SHBin);
 
-                string Code = GeoShaderGen.GetGeoShader(Shdr.GeoShaderIndex, VtxNames.Outputs, out GeoNames);
+                CodeGeo = GeoShaderGen.GetGeoShader(Shdr.GeoShaderIndex, VtxNames.Outputs, out GeoNames);
 
-                Shader.CompileAndCheck(GeoShaderHandle, Code);
+                Shader.CompileAndCheck(GeoShaderHandle, CodeGeo);
             }
         }
 

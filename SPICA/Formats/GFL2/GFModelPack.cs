@@ -225,7 +225,10 @@ namespace SPICA.Formats.GFL2
             }
             foreach (GFShader S in ToMerge.VertexShaders)
             {
-                AddUnique(VertexShaders, S);
+                if (!VertexShaders.Contains(S))
+                {
+                    VertexShaders.Add(S); //Do not use AddUnique since the shaders sometimes contain duplicates (no idea why)
+                }
             }
         }
 

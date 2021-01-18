@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\Common\BitUtils.cs" />
+    <Compile Include="Formats\Common\Compression\LZ11.cs" />
     <Compile Include="Formats\Common\PokemonBBoxGen.cs" />
     <Compile Include="Formats\Common\CRC32Hash.cs" />
     <Compile Include="Formats\Common\Exceptions.cs" />
