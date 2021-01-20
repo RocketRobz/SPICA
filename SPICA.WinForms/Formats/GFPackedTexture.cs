@@ -37,6 +37,11 @@ namespace SPICA.WinForms.Formats
 
                 Input.Read(Buffer, 0, Buffer.Length);
 
+				if (Buffer.Length > 4 && Buffer[0] == 0 && Buffer[1] == 0 && Buffer[2] == 1 && Buffer[3] == 0)
+                {
+					Output.Merge(new SPICA.Formats.GFL2.GFModelPack(new MemoryStream(Buffer)).ToH3D());
+                }
+
                 if (Buffer.Length < 4 || Encoding.ASCII.GetString(Buffer, 0, 4) != "BCH\0") continue;
 
                 using (MemoryStream MS = new MemoryStream(Buffer))

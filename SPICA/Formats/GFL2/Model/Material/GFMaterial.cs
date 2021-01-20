@@ -468,7 +468,11 @@ namespace SPICA.Formats.GFL2.Model.Material
             Constant5Color.Write(Writer);
             Specular0Color.Write(Writer);
             Specular1Color.Write(Writer);
-            BlendColor.Write(Writer);
+            //BlendColor.Write(Writer);
+            Writer.Write(true);
+            Writer.Write(true);
+            Writer.Write(true);
+            Writer.Write(true);
             EmissionColor.Write(Writer);
             AmbientColor.Write(Writer);
             DiffuseColor.Write(Writer);

@@ -595,6 +595,7 @@ namespace SPICA.Formats.Generic.CMIF
 
                 H3DMaterial mat = H3DMaterial.GetSimpleMaterial(m.Name, matName, tex0Name, shaderName, shaderIndex);
                 mat.MaterialParams.Flags = H3DMaterialFlags.IsFragmentLightingEnabled;
+                //mat.MaterialParams.FaceCulling = PICAFaceCulling.BackFace;
                 //mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
                 //mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
                 //mat.MaterialParams.LUTReflecRSamplerName = "Toontable.tga";
