@@ -66,9 +66,15 @@ namespace SPICA.Formats.Generic.StudioMdl
 
                     PICAVertex[] Vertices = Mesh.GetVertices();
 
+                    string MaterialName = Mdl.Materials[Mesh.MaterialIndex].Texture0Name;
+                    if (MaterialName.Equals("projection_dummy") && Mdl.Materials[Mesh.MaterialIndex].Texture1Name != null)
+                    {
+                        MaterialName = Mdl.Materials[Mesh.MaterialIndex].Texture1Name;
+                    }
+
                     Meshes.Add(new SMDMesh()
                     {
-                        MaterialName = Mdl.Materials[Mesh.MaterialIndex].Texture0Name + ".png",
+                        MaterialName = MaterialName + ".png",
                         Vertices     = MeshTransform.GetVerticesList(Mdl.Skeleton, Mesh)
                     });
                 }

@@ -22,7 +22,7 @@ namespace SPICA.Formats.Generic.CMIF
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 7;
+        public const int READER_VERSION = 8;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
@@ -584,10 +584,19 @@ namespace SPICA.Formats.Generic.CMIF
 
                 string shaderName = "DefaultShader";
                 byte shaderIndex = 0;
+                byte lightSetIndex = 0;
+                RGBA ambientColor = RGBA.White;
+                RGBA diffuseColor = RGBA.White;
                 if (fileVersion >= 5)
                 {
                     shaderName = readStringFromOffset(dis);
                     shaderIndex = dis.ReadByte();
+                }
+                if (fileVersion >= 8)
+                {
+                    lightSetIndex = dis.ReadByte();
+                    ambientColor = new RGBA(dis);
+                    diffuseColor = new RGBA(dis);
                 }
 
                 int textureCount = dis.ReadByte();
@@ -600,12 +609,12 @@ namespace SPICA.Formats.Generic.CMIF
                 //mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
                 //mat.MaterialParams.LUTReflecRSamplerName = "Toontable.tga";
                 //mat.MaterialParams.ShaderReference = "0@FieldChar";
-                //mat.MaterialParams.LightSetIndex = 2;
+                mat.MaterialParams.LightSetIndex = lightSetIndex;
                 mat.MaterialParams.EmissionColor = RGBA.Black;
                 mat.MaterialParams.Specular0Color = RGBA.Black;
                 mat.MaterialParams.Specular1Color = RGBA.Black;
-                mat.MaterialParams.AmbientColor = RGBA.White;
-                mat.MaterialParams.DiffuseColor = RGBA.White;
+                mat.MaterialParams.AmbientColor = ambientColor;
+                mat.MaterialParams.DiffuseColor = diffuseColor;
 
                 float[] uvPtrs = new float[4];
 
