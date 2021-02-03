@@ -307,35 +307,35 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             int   AttributesTotal   = 0;
 
             float[] Scales = new float[] { 1, 0, 0, 0, 1, 0, 0, 0 };
-            float[] DefaultScales = new float[] { 1f / 255f, 1, 1, 1, 0.01f, 1, 1, 1 }; 
+            float[] FixedScales = new float[] { 1, 1, 1, 1, 1, 1, 1, 1 }; 
             //gdkchan wtf why would you serialize with default normal scale 0, that's cringe. think of the fixed attributes!
             foreach (PICAFixedAttribute Fixed in FixedAttributes)
             {
                 switch (Fixed.Name)
                 {
                     case PICAAttributeName.Position: //won't happen, but why not
-                        Scales[3] = DefaultScales[3];
+                        Scales[3] = FixedScales[3];
                         break;
                     case PICAAttributeName.Normal:
-                        Scales[2] = DefaultScales[2];
+                        Scales[2] = FixedScales[2];
                         break;
                     case PICAAttributeName.Tangent:
-                        Scales[1] = DefaultScales[1];
+                        Scales[1] = FixedScales[1];
                         break;
                     case PICAAttributeName.Color:
-                        Scales[0] = DefaultScales[0];
+                        Scales[0] = FixedScales[0];
                         break;
                     case PICAAttributeName.TexCoord0:
-                        Scales[7] = DefaultScales[7];
+                        Scales[7] = FixedScales[7];
                         break;
                     case PICAAttributeName.TexCoord1:
-                        Scales[6] = DefaultScales[6];
+                        Scales[6] = FixedScales[6];
                         break;
                     case PICAAttributeName.TexCoord2:
-                        Scales[5] = DefaultScales[5];
+                        Scales[5] = FixedScales[5];
                         break;
                     case PICAAttributeName.BoneWeight:
-                        Scales[4] = DefaultScales[4];
+                        Scales[4] = FixedScales[4];
                         break;
                 }
             }

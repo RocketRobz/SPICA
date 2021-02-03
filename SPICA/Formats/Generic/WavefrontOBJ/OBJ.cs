@@ -311,7 +311,7 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
                 string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
 
-                if (newName != "") ;
+                if (newName != "")
                 {
                     Model.Name = newName;
                 }

@@ -16,16 +16,18 @@ using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Texture;
 using System.Drawing;
 using SPICA.Formats.CtrH3D.Animation;
+using SPICA.Formats.CtrH3D.LUT;
 
 namespace SPICA.Formats.Generic.CMIF
 {
     public class CMIFFile
     {
         public const string CMIF_MAGIC = "CMIF";
-        public const int READER_VERSION = 8;
+        public const int READER_VERSION = 9;
 
         public List<H3DModel> models = new List<H3DModel>();
         public List<H3DTexture> textures = new List<H3DTexture>();
+        public List<H3DLUT> LUTs = new List<H3DLUT>();
         public List<H3DAnimation> skeletalAnimations = new List<H3DAnimation>();
         public List<H3DMaterialAnim> materialAnimations = new List<H3DMaterialAnim>();
 
@@ -77,7 +79,7 @@ namespace SPICA.Formats.Generic.CMIF
             while (texPT.hasNext())
             {
                 texPT.next(dis);
-                textures.Add(readTexture(dis, version));
+                doReadTexture(dis, version);
             }
 
             dis.BaseStream.Seek(sklAnmPointerTableOffset, SeekOrigin.Begin);
@@ -99,6 +101,99 @@ namespace SPICA.Formats.Generic.CMIF
             }
 
             dis.Close();
+
+            setMaterialLUTData();
+        }
+
+        void setMaterialLUTData()
+        {
+            foreach (H3DModel model in models)
+            {
+                foreach (H3DMaterial mat in model.Materials)
+                {
+                    mat.MaterialParams.LUTReflecRTableName = getLUTName(mat.MaterialParams.LUTReflecRSamplerName);
+                    mat.MaterialParams.LUTReflecGTableName = getLUTName(mat.MaterialParams.LUTReflecGSamplerName);
+                    mat.MaterialParams.LUTReflecBTableName = getLUTName(mat.MaterialParams.LUTReflecBSamplerName);
+                    mat.MaterialParams.LUTDist0TableName = getLUTName(mat.MaterialParams.LUTDist0TableName);
+                    mat.MaterialParams.LUTDist1TableName = getLUTName(mat.MaterialParams.LUTDist1TableName);
+                    mat.MaterialParams.LUTFresnelTableName = getLUTName(mat.MaterialParams.LUTFresnelSamplerName);
+                    mat.MaterialParams.LUTReflecRSamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTReflecRSamplerName);
+                    mat.MaterialParams.LUTReflecGSamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTReflecGSamplerName);
+                    mat.MaterialParams.LUTReflecBSamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTReflecBSamplerName);
+                    mat.MaterialParams.LUTDist0SamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTDist0SamplerName);
+                    mat.MaterialParams.LUTDist1SamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTDist1SamplerName);
+                    mat.MaterialParams.LUTFresnelSamplerName = getRealLUTSamplerName(mat.MaterialParams.LUTFresnelSamplerName);
+                    mat.MaterialParams.LUTInputAbsolute.ReflecR = (getLUTSampler(mat.MaterialParams.LUTReflecRTableName, mat.MaterialParams.LUTReflecRSamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                    mat.MaterialParams.LUTInputAbsolute.ReflecG = (getLUTSampler(mat.MaterialParams.LUTReflecGTableName, mat.MaterialParams.LUTReflecGSamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                    mat.MaterialParams.LUTInputAbsolute.ReflecB = (getLUTSampler(mat.MaterialParams.LUTReflecBTableName, mat.MaterialParams.LUTReflecBSamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                    mat.MaterialParams.LUTInputAbsolute.Dist0 = (getLUTSampler(mat.MaterialParams.LUTDist0TableName, mat.MaterialParams.LUTDist0SamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                    mat.MaterialParams.LUTInputAbsolute.Dist1 = (getLUTSampler(mat.MaterialParams.LUTDist1TableName, mat.MaterialParams.LUTDist1SamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                    mat.MaterialParams.LUTInputAbsolute.Fresnel = (getLUTSampler(mat.MaterialParams.LUTFresnelTableName, mat.MaterialParams.LUTFresnelSamplerName).Flags & H3DLUTFlags.IsAbsolute) > 0;
+                }
+            }
+        }
+
+        string getRealLUTSamplerName(string samplerName)
+        {
+            if (samplerName == null)
+            {
+                return null;
+            }
+            foreach (H3DLUT lut in LUTs)
+            {
+                foreach (H3DLUTSampler samp in lut.Samplers)
+                {
+                    if (samp.Name.Equals(samplerName))
+                    {
+                        return samplerName;
+                    }
+                    else if (samplerName.Equals(lut.Name + "_" + samp.Name))
+                    {
+                        return samp.Name;
+                    }
+                }
+            }
+            return samplerName;
+        }
+
+        H3DLUTSampler getLUTSampler(string tableName, string realSamplerName)
+        {
+            foreach (H3DLUT lut in LUTs)
+            {
+                if (lut.Name.Equals(tableName))
+                {
+                    foreach (H3DLUTSampler samp in lut.Samplers)
+                    {
+                        if (samp.Name.Equals(realSamplerName))
+                        {
+                            return samp;
+                        }
+                    }
+                }
+            }
+            return new H3DLUTSampler();
+        }
+        string getLUTName(string samplerName)
+        {
+            if (samplerName == null)
+            {
+                return null;
+            }
+            foreach (H3DLUT lut in LUTs)
+            {
+                foreach (H3DLUTSampler samp in lut.Samplers)
+                {
+                    if (samp.Name.Equals(samplerName))
+                    {
+                        return lut.Name;
+                    }
+                    else if (samplerName.Equals(lut.Name + "_" + samp.Name))
+                    {
+                        return lut.Name;
+                    }
+                }
+            }
+            return "LookupTableSetContentCtrName";
         }
 
         public const string MAT_ANIME_MAGIC = "IFMA";
@@ -408,13 +503,17 @@ namespace SPICA.Formats.Generic.CMIF
             {
                 output.MaterialAnimations.Add(matanm);
             }
+            foreach (H3DLUT lut in LUTs)
+            {
+                output.LUTs.Add(lut);
+            }
 
             return output;
         }
 
         public const string TEXTURE_MAGIC = "IFTX";
 
-        static H3DTexture readTexture(BinaryReader dis, uint fileVersion)
+        void doReadTexture(BinaryReader dis, uint fileVersion)
         {
             if (dis.ReadPaddedString(4) != TEXTURE_MAGIC)
             {
@@ -494,7 +593,85 @@ namespace SPICA.Formats.Generic.CMIF
 
             Bitmap bmp = TextureConverter.GetBitmap(Output, width, height);
 
-            return new H3DTexture(name, bmp, Format);
+            bool TexAsLUT = false;
+            if (metaData.Contains("CreativeStudio_TexAsLUT"))
+            {
+                TexAsLUT = (int)metaData["CreativeStudio_TexAsLUT"].Values[0] > 0;
+            }
+            if (!TexAsLUT)
+            {
+                H3DTexture tex = new H3DTexture(name, bmp, Format);
+                textures.Add(tex);
+            }
+            else
+            {
+                string lutName = "LookupTableSetContentCtrName";
+                if (metaData.Contains("H3DLookUpTableSetName"))
+                {
+                    lutName = (string)metaData["H3DLookUpTableSetName"].Values[0];
+                }
+                H3DLUT lut = getLUT(lutName);
+                H3DLUTSampler sampler = new H3DLUTSampler();
+                sampler.Name = name;
+                string incName = lutName + "_";
+                if (sampler.Name.StartsWith(incName))
+                {
+                    sampler.Name = sampler.Name.Substring(incName.Length);
+                }
+                bool asAbsolute = true;
+                int absCmp = -1;
+                for (int i = bmp.Width / 2; i < bmp.Width; i++)
+                {
+                    int r = bmp.GetPixel(i, 0).R;
+                    if (absCmp == -1)
+                    {
+                        absCmp = r;
+                    }
+                    else
+                    {
+                        if (absCmp != r)
+                        {
+                            asAbsolute = false;
+                            break;
+                        }
+                    }
+                }
+
+                float[] table = new float[256];
+                int inputLength = bmp.Width;
+
+                if (asAbsolute)
+                {
+                    inputLength = bmp.Width / 2;
+                    sampler.Flags = H3DLUTFlags.IsAbsolute;
+                }
+                for (int i = 0; i < inputLength; i++)
+                {
+                    int tableOffs = (int)(i * (256f / inputLength));
+                    table[tableOffs] = bmp.GetPixel(i, 0).R / 255f;
+                    if (asAbsolute)
+                    {
+                        table[tableOffs + 1] = table[tableOffs];
+                    }
+                }
+                sampler.Table = table;
+                lut.Samplers.Add(sampler);
+            }
+        }
+
+        H3DLUT getLUT(string name)
+        {
+            foreach (H3DLUT l in LUTs)
+            {
+                if (l.Name.Equals(name))
+                {
+                    return l;
+                }
+            }
+            H3DLUT lut = new H3DLUT();
+            lut.Name = name;
+            LUTs.Add(lut);
+            return lut;
         }
 
         public static byte[] readLZ(BinaryReader dis, uint fileVersion)
@@ -587,6 +764,9 @@ namespace SPICA.Formats.Generic.CMIF
                 byte lightSetIndex = 0;
                 RGBA ambientColor = RGBA.White;
                 RGBA diffuseColor = RGBA.White;
+                RGBA specular0Color = RGBA.Black;
+                RGBA specular1Color = RGBA.Black;
+                byte translucencyKind = 0;
                 if (fileVersion >= 5)
                 {
                     shaderName = readStringFromOffset(dis);
@@ -597,6 +777,12 @@ namespace SPICA.Formats.Generic.CMIF
                     lightSetIndex = dis.ReadByte();
                     ambientColor = new RGBA(dis);
                     diffuseColor = new RGBA(dis);
+                }
+                if (fileVersion >= 9)
+                {
+                    specular0Color = new RGBA(dis);
+                    specular1Color = new RGBA(dis);
+                    translucencyKind = dis.ReadByte();
                 }
 
                 int textureCount = dis.ReadByte();
@@ -611,10 +797,11 @@ namespace SPICA.Formats.Generic.CMIF
                 //mat.MaterialParams.ShaderReference = "0@FieldChar";
                 mat.MaterialParams.LightSetIndex = lightSetIndex;
                 mat.MaterialParams.EmissionColor = RGBA.Black;
-                mat.MaterialParams.Specular0Color = RGBA.Black;
-                mat.MaterialParams.Specular1Color = RGBA.Black;
+                mat.MaterialParams.Specular0Color = specular0Color;
+                mat.MaterialParams.Specular1Color = specular1Color;
                 mat.MaterialParams.AmbientColor = ambientColor;
                 mat.MaterialParams.DiffuseColor = diffuseColor;
+                mat.MaterialParams.TranslucencyKind = (H3DTranslucencyKind)translucencyKind;
 
                 float[] uvPtrs = new float[4];
 
@@ -645,6 +832,48 @@ namespace SPICA.Formats.Generic.CMIF
                 }
 
                 mat.MaterialParams.TextureSources = uvPtrs;
+
+                if (fileVersion >= 9)
+                {
+                    int lutCount = dis.ReadByte();
+                    for (int i = 0; i < lutCount; i++)
+                    {
+                        CMIFLUTName name = (CMIFLUTName)dis.ReadByte();
+                        PICALUTInput input = (PICALUTInput)dis.ReadByte();
+                        string LUTSamplerName = readStringFromOffset(dis);
+
+                        switch (name)
+                        {
+                            case CMIFLUTName.REFLEC_R:
+                                mat.MaterialParams.LUTReflecRSamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.ReflecR = input;
+                                mat.MaterialParams.FragmentFlags |= H3DFragmentFlags.IsLUTReflectionEnabled;
+                                break;
+                            case CMIFLUTName.REFLEC_G:
+                                mat.MaterialParams.LUTReflecGSamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.ReflecG = input;
+                                mat.MaterialParams.FragmentFlags |= H3DFragmentFlags.IsLUTReflectionEnabled;
+                                break;
+                            case CMIFLUTName.REFLEC_B:
+                                mat.MaterialParams.LUTReflecBSamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.ReflecB = input;
+                                mat.MaterialParams.FragmentFlags |= H3DFragmentFlags.IsLUTReflectionEnabled;
+                                break;
+                            case CMIFLUTName.DIST_0:
+                                mat.MaterialParams.LUTDist0SamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.Dist0 = input;
+                                break;
+                            case CMIFLUTName.DIST_1:
+                                mat.MaterialParams.LUTDist1SamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.Dist1 = input;
+                                break;
+                            case CMIFLUTName.FRESNEL:
+                                mat.MaterialParams.LUTFresnelSamplerName = LUTSamplerName;
+                                mat.MaterialParams.LUTInputSelection.Fresnel = input;
+                                break;
+                        }
+                    }
+                }
 
                 //Depth test
                 bool depthOpEnabled = dis.ReadBoolean();
@@ -694,6 +923,12 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.StencilOperation.FailOp = (PICAStencilOp)dis.ReadByte();
                     mat.MaterialParams.StencilOperation.ZFailOp = (PICAStencilOp)dis.ReadByte();
                     mat.MaterialParams.StencilOperation.ZPassOp = (PICAStencilOp)dis.ReadByte();
+                }
+
+                //Face culling
+                if (fileVersion >= 9)
+                {
+                    mat.MaterialParams.FaceCulling = (PICAFaceCulling)dis.ReadByte();
                 }
 
                 //Bump mapping
@@ -759,17 +994,6 @@ namespace SPICA.Formats.Generic.CMIF
                 if (mat.MaterialParams.ShaderReference.Contains("PokePack"))
                 {
                     mat.MaterialParams.FresnelSelector = H3DFresnelSelector.Sec;
-                    mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
-                    mat.MaterialParams.LUTInputSelection.ReflecR = PICALUTInput.CosNormalView;
-                    mat.MaterialParams.LUTInputSelection.ReflecG = PICALUTInput.CosNormalView;
-                    mat.MaterialParams.LUTInputSelection.ReflecB = PICALUTInput.CosNormalView;
-                    mat.MaterialParams.LUTReflecRTableName = "LookupTableSetContentCtrName";
-                    mat.MaterialParams.LUTReflecGTableName = "LookupTableSetContentCtrName";
-                    mat.MaterialParams.LUTReflecBTableName = "LookupTableSetContentCtrName";
-                    mat.MaterialParams.LUTReflecRSamplerName = "Default_Lta_7D.tga";
-                    mat.MaterialParams.LUTReflecGSamplerName = "pm0001_00_Hta.tga";
-                    mat.MaterialParams.LUTReflecBSamplerName = "LinerTable.tga";
-                    mat.MaterialParams.TranslucencyKind = H3DTranslucencyKind.LayerConfig4;
                 }
                 //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(mat, Newtonsoft.Json.Formatting.Indented));
                 m.Materials.Add(mat);
@@ -1203,6 +1427,16 @@ namespace SPICA.Formats.Generic.CMIF
             ETC1,
             RGB_A,
             RGB565_5A1
+        }
+
+        public enum CMIFLUTName
+        {
+            REFLEC_R,
+            REFLEC_G,
+            REFLEC_B,
+            DIST_0,
+            DIST_1,
+            FRESNEL
         }
 
         public enum MetaDataValueType
