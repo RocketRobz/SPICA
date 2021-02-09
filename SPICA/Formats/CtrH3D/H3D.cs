@@ -6,6 +6,7 @@ using SPICA.Formats.CtrH3D.Light;
 using SPICA.Formats.CtrH3D.LUT;
 using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Model.Material;
+using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.Formats.CtrH3D.Scene;
 using SPICA.Formats.CtrH3D.Shader;
 using SPICA.Formats.CtrH3D.Texture;
@@ -143,11 +144,30 @@ namespace SPICA.Formats.CtrH3D
                     mat.MaterialParams.TextureCoords[1].ReferenceCameraIndex = 0;
                     mat.MaterialParams.TextureCoords[2].ReferenceCameraIndex = 0;*/
                 }
-                /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene.Models[0], Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
+                /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 }));*/
             }
+
+            /*RGBA DesiredDarkYellow = new RGBA(0, 128, 0, 255);
+            RGBA DesiredLightYellow = new RGBA(0, 255, 0, 255);
+            RGBA DesiredCrimson = new RGBA(0, 128, 0, 255);
+
+            List<string> MaterialNamesToReplace = new List<string>(new string[] { "ArmL_Lay1_yellow", "ArmR_Lay1_yellow", "BodyFront_Lay1_yellow", "BodyMid_Lay1_yellow", "Tail_Lay1_yellow" });
+
+            foreach (H3DModel Model in Scene.Models)
+            {
+                foreach (H3DMaterial Material in Model.Materials)
+                {
+                    if (MaterialNamesToReplace.Contains(Material.Name))
+                    {
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(2), Material.MaterialParams, DesiredDarkYellow);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(3), Material.MaterialParams, DesiredLightYellow);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(4), Material.MaterialParams, DesiredCrimson);
+                    }
+                }
+            }*/
 
             /*RGBA DesiredOuterFireColor = new RGBA(0, 255, 0, 255); //Change this to whatever color you want the fire to be
             RGBA DesiredInnerFireColor = new RGBA(0, 128, 0, 255); //Change these to whatever color you want the fire to be
@@ -278,23 +298,26 @@ namespace SPICA.Formats.CtrH3D
 
         public void Merge(H3D SceneData)
         {
-            AddUnique(SceneData.Models,               Models);
-            AddUnique(SceneData.Materials,            Materials);
-            AddUnique(SceneData.Shaders,              Shaders);
-            AddUnique(SceneData.Textures,             Textures);
-            AddUnique(SceneData.LUTs,                 LUTs);
-            AddUnique(SceneData.Lights,               Lights);
-            AddUnique(SceneData.Cameras,              Cameras);
-            AddUnique(SceneData.Fogs,                 Fogs);
-            AddUnique(SceneData.SkeletalAnimations,   SkeletalAnimations);
-            AddUnique(SceneData.MaterialAnimations,   MaterialAnimations);
-            AddUnique(SceneData.VisibilityAnimations, VisibilityAnimations);
-            AddUnique(SceneData.LightAnimations,      LightAnimations);
-            AddUnique(SceneData.CameraAnimations,     CameraAnimations);
-            AddUnique(SceneData.FogAnimations,        FogAnimations);
-            AddUnique(SceneData.Scenes,               Scenes);
+            if (SceneData != null)
+            {
+                AddUnique(SceneData.Models, Models);
+                AddUnique(SceneData.Materials, Materials);
+                AddUnique(SceneData.Shaders, Shaders);
+                AddUnique(SceneData.Textures, Textures);
+                AddUnique(SceneData.LUTs, LUTs);
+                AddUnique(SceneData.Lights, Lights);
+                AddUnique(SceneData.Cameras, Cameras);
+                AddUnique(SceneData.Fogs, Fogs);
+                AddUnique(SceneData.SkeletalAnimations, SkeletalAnimations);
+                AddUnique(SceneData.MaterialAnimations, MaterialAnimations);
+                AddUnique(SceneData.VisibilityAnimations, VisibilityAnimations);
+                AddUnique(SceneData.LightAnimations, LightAnimations);
+                AddUnique(SceneData.CameraAnimations, CameraAnimations);
+                AddUnique(SceneData.FogAnimations, FogAnimations);
+                AddUnique(SceneData.Scenes, Scenes);
 
-            SourceData.AddRange(SceneData.SourceData);
+                SourceData.AddRange(SceneData.SourceData);
+            }
         }
 
         private void AddUnique<T>(H3DDict<T> Src, H3DDict<T> Tgt) where T : INamed

@@ -298,6 +298,7 @@
     <Compile Include="Formats\CtrH3D\Scene\H3DScene.cs" />
     <Compile Include="Formats\CtrH3D\Shader\H3DShader.cs" />
     <Compile Include="Formats\CtrH3D\Texture\H3DTexture.cs" />
+    <Compile Include="Formats\FormatIdentifier.cs" />
     <Compile Include="Formats\Generic\CMIF\CMIFFile.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAE.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAEAccessor.cs" />

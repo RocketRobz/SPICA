@@ -74,7 +74,7 @@
     <Compile Include="Formats\FileIO.cs" />
     <Compile Include="Formats\GFAreaLOD.cs" />
     <Compile Include="Formats\GFPkmnSklAnim.cs" />
-    <Compile Include="Formats\FormatIdentifier.cs" />
+    <Compile Include="Formats\ContainerIdentifier.cs" />
     <Compile Include="Formats\GFBtlSklAnim.cs" />
     <Compile Include="Formats\GFCharaModel.cs" />
     <Compile Include="Formats\GFL2OverWorld.cs" />

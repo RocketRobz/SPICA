@@ -77,7 +77,7 @@ namespace SPICA.WinForms
             //TODO: Use Parallel loop for more speed and keep UI responsive
             foreach (string File in Files)
             {
-                H3D Data = FormatIdentifier.IdentifyAndOpen(File);
+                H3D Data = ContainerIdentifier.IdentifyAndOpen(File);
 
                 if (Data != null)
                 {

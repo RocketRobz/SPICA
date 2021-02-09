@@ -2,185 +2,144 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ESPICA.CLI;
+using SPICA.Formats;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.Generic.CMIF;
 using SPICA.Formats.Generic.WavefrontOBJ;
+using SPICA.Formats.GFL2;
+
 namespace ESPICA
 {
     class Program
     {
         static void Main(string[] args)
         {
-            List<string> argsList = new List<string>(args);
-            if (args.Length > 0)
+            ArgumentBuilder ab = new ArgumentBuilder(
+                new ArgumentPattern("input", "One or more converter input files", ArgumentType.STRING, null, true, "-i"),
+                new ArgumentPattern("output", "An optional specified output file.", ArgumentType.STRING, null, "-o"),
+                new ArgumentPattern("outputType", "The output format type (h3d/gfmbdlp)", ArgumentType.STRING, "h3d", "-t", "--type"),
+                new ArgumentPattern("outputVersion", "The output format version", ArgumentType.INT, (int)0x21, "-v", "--version"),
+                new ArgumentPattern("filter", "Output format filters (model/texture/animation/all)", ArgumentType.STRING, "all", true, "-f", "--filter")
+            );
+
+            Console.WriteLine("SPICA Embedded Command Line Interface\n");
+            ab.parse(args);
+
+            ArgumentContent inputs = ab.getContent("input");
+            if (inputs.contents.Count == 0)
             {
-                WorkMode mode = WorkMode.None;
-                switch (args[0])
-                {
-                    case "texturemerge":
-                        mode = WorkMode.TextureMerge;
-                        break;
-                    case "objconvert":
-                        mode = WorkMode.OBJConvert;
-                        break;
-                    case "cmif":
-                        mode = WorkMode.CMIFConvert;
-                        break;
-                }
-                if (mode != WorkMode.None)
-                {
-                    string input = null;
-                    string donor = null;
-                    string output = null;
-                    if (argsList.Contains("-i"))
-                    {
-                        int index = argsList.IndexOf("-i") + 1;
-                        if (index >= argsList.Count)
-                        {
-                            Console.WriteLine("Argument out of reach - input");
-                            return;
-                        }
-                        else
-                        {
-                            input = args[index];
-                        }
-                    }
+                Console.WriteLine("No inputs given. Stopping.\n");
 
-                    if (argsList.Contains("-d"))
-                    {
-                        int index = argsList.IndexOf("-d") + 1;
-                        if (index >= argsList.Count)
-                        {
-                            Console.WriteLine("Argument out of reach - donor");
-                            return;
-                        }
-                        else
-                        {
-                            donor = args[index];
-                        }
-                    }
-
-                    if (argsList.Contains("-o"))
-                    {
-                        int index = argsList.IndexOf("-o") + 1;
-                        if (index >= argsList.Count)
-                        {
-                            Console.WriteLine("Argument out of reach - output");
-                            return;
-                        }
-                        else
-                        {
-                            output = args[index];
-                        }
-                    }
-
-                    if (input == null)
-                    {
-                        Console.WriteLine("Input argument missing");
-                        return;
-                    }
-                    if (mode == WorkMode.TextureMerge && donor == null)
-                    {
-                        Console.WriteLine("Texture merge donor argument missing");
-                        return;
-                    }
-
-                    H3D Scene = new H3D();
-
-                    if (donor != null)
-                    {
-                        using (FileStream FS = new FileStream(donor, FileMode.Open))
-                        {
-                            Console.WriteLine("Starting conversion");
-                            if (FS.Length > 4)
-                            {
-                                BinaryReader Reader = new BinaryReader(FS);
-
-                                uint MagicNum = Reader.ReadUInt32();
-
-                                FS.Seek(-4, SeekOrigin.Current);
-
-                                string Magic = Encoding.ASCII.GetString(Reader.ReadBytes(4));
-
-                                FS.Seek(0, SeekOrigin.Begin);
-
-                                if (Magic.StartsWith("BCH"))
-                                {
-                                    Console.WriteLine("Merging H3D " + donor);
-
-                                    Scene = H3D.Open(Reader.ReadBytes((int)FS.Length));
-
-                                    FS.Dispose();
-                                }
-                            }
-                        }
-                    }
-
-                    string outFile = output;
-                    if (outFile == null)
-                    {
-                        outFile = Path.GetFileNameWithoutExtension(input) + "_conv.bch";
-                    }
-
-                    switch (mode)
-                    {
-                        case WorkMode.OBJConvert:
-                            Scene.Materials.Clear();
-                            Scene.Models.Clear();
-                            goto case WorkMode.TextureMerge;
-                        case WorkMode.TextureMerge:
-                            {
-                                bool textureless = false;
-                                if (argsList.Contains("-notextures"))
-                                {
-                                    Console.WriteLine("No texture mode");
-                                    textureless = true;
-                                }
-                                Console.WriteLine("Merging OBJ " + input);
-
-                                Scene.Merge(new OBJ(input).ToH3D(Directory.GetParent(input).FullName, textureless));
-                            }
-                            break;
-                        case WorkMode.CMIFConvert:
-                            {
-                                Console.WriteLine("Converting Common Interchange file to H3D...");
-
-                                Scene.Merge(new CMIFFile(new FileStream(input, FileMode.Open)).ToH3D());
-                            }
-                            break;
-                    }
-
-                       
-
-                    H3D.Save(outFile, Scene);
-
-                    Console.WriteLine("Saved as " + outFile);
-                }
+                printHelp(ab);
             }
             else
             {
-                printHelp();
+                string formatName = ab.getContent("outputType").stringValue();
+                string formatExtension;
+                switch (formatName)
+                {
+                    case "h3d":
+                        formatExtension = "bch";
+                        break;
+                    case "gfbmdlp":
+                        formatExtension = formatName;
+                        break;
+                    default:
+                        Console.WriteLine("Unknown output type: " + formatName);
+                        return;
+                }
+
+                H3D Scene = new H3D();
+
+                Scene.BackwardCompatibility = (byte)ab.getContent("outputVersion").intValue();
+                Scene.ForwardCompatibility = Scene.BackwardCompatibility;
+
+                for (int i = 0; i < inputs.contents.Count; i++)
+                {
+                    string inPath = inputs.stringValue(i);
+                    if (File.Exists(inPath))
+                    {
+                        Scene.Merge(FormatIdentifier.IdentifyAndOpen(inPath));
+                    }
+                }
+
+                ArgumentContent flt = ab.getContent("filter");
+
+                bool deleteModel = true;
+                bool deleteTex = true;
+                bool deleteAnime = true;
+
+                for (int i = 0; i < flt.contents.Count; i++)
+                {
+                    string filter = flt.stringValue(i);
+                    switch (filter)
+                    {
+                        case "model":
+                            deleteModel = false;
+                            break;
+                        case "texture":
+                            deleteModel = false;
+                            break;
+                        case "animation":
+                            deleteAnime = false;
+                            break;
+                        case "all":
+                            deleteAnime = false;
+                            deleteModel = false;
+                            deleteTex = false;
+                            break;
+                        default:
+                            Console.WriteLine("Warning: unknown filter - " + filter);
+                            break;
+                    }
+                }
+
+                if (deleteModel)
+                {
+                    Scene.Models.Clear();
+                }
+                if (deleteTex)
+                {
+                    Scene.Textures.Clear();
+                }
+                if (deleteAnime)
+                {
+                    Scene.MaterialAnimations.Clear();
+                    Scene.SkeletalAnimations.Clear();
+                    Scene.VisibilityAnimations.Clear();
+                    Scene.FogAnimations.Clear();
+                    Scene.CameraAnimations.Clear();
+                    Scene.LightAnimations.Clear();
+                }
+
+                string outputFilePath = Path.Combine(Directory.GetParent(inputs.stringValue(0)).FullName, Path.GetFileNameWithoutExtension(inputs.stringValue(0)) + "." + formatExtension);
+                ArgumentContent outCnt = ab.getContent("output", true);
+                if (outCnt != null)
+                {
+                    outputFilePath = outCnt.stringValue();
+                }
+
+                switch (formatName)
+                {
+                    case "h3d":
+                        H3D.Save(outputFilePath, Scene);
+                        break;
+                    case "gfbmdlp":
+                        using (BinaryWriter Writer = new BinaryWriter(new FileStream(outputFilePath, FileMode.Create, FileAccess.Write)))
+                        {
+                            GFModelPack ModelPack = new GFModelPack(Scene);
+                            ModelPack.Write(Writer);
+                            Writer.Close();
+                        }
+                        break;
+                }
             }
         }
 
-        static void printHelp()
+        static void printHelp(ArgumentBuilder ab)
         {
-            Console.WriteLine("SPICA Embedded Command Line Interface\n");
-
-            Console.WriteLine("Usage:\n");
-            Console.WriteLine("Add new textures to a BCH pack: ESPICA.exe texturemerge [args]");
-            Console.WriteLine("Convert an OBJ file to BCH: ESPICA.exe objconvert [args]");
-            Console.WriteLine("Convert a CMIF asset pack to BCH: ESPICA.exe cmif [args]");
-
-            Console.WriteLine("\nRequired arguments:\n");
-            Console.WriteLine("-i <input file path>");
-
-            Console.WriteLine("\nOptional arguments:\n");
-            Console.WriteLine("-d <donor/inject target file path> Scene to merge the input with. Required for texturemerge.");
-            Console.WriteLine("-o <output file path> (Default: <input>_conv.bch)");
-
-            Console.WriteLine("\nCLI switches:\n");
-            Console.WriteLine("-notextures - Don't embed OBJ textures into the BCH container. Requires them being merged to a global texture pack with texturemerge.");
+            ab.print();
 
             Console.WriteLine("\n\nSPICA is made by gdkchan an licensed under the Unlicense at https://github.com/gdkchan/SPICA");
             Console.WriteLine("ESPICA is made by HelloOO7 as part of https://github.com/HelloOO7/CTRMap at https://github.com/HelloOO7/SPICA");

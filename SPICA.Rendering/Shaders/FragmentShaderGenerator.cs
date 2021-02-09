@@ -175,6 +175,8 @@ namespace SPICA.Rendering.Shaders
                     SB.AppendLine("\tPrevious = Output;");
             }
 
+            //SB.AppendLine($"Output = vec4(Normal, 1.0);");
+
             SB.AppendLine("}");
 
             return SB.ToString();
@@ -247,7 +249,7 @@ namespace SPICA.Rendering.Shaders
             SB.AppendLine("\tfor (int i = 0; i < LightsCount; i++) {");
 
             SB.AppendLine("\t\tvec3 Light = (Lights[i].Directional != 0)" +
-                 " ? normalize(Lights[i].Position)" +
+                 $" ? normalize(Lights[i].Position)" +
                 $" : normalize(Lights[i].Position + {View}.xyz);");
 
             SB.AppendLine($"\t\tvec3 Half = normalize(normalize({View}.xyz) + Light);");
@@ -263,7 +265,6 @@ namespace SPICA.Rendering.Shaders
                 " : max(CosLightNormal, 0);");
 
             SB.AppendLine("\t\tfloat SpotAtt = 1;");
-            SB.AppendLine();
 
             SB.AppendLine("\t\tif (Lights[i].SpotAttEnb != 0) {");
             SB.AppendLine("\t\t\tfloat SpotIndex;");

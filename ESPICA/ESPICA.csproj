@@ -80,6 +80,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CLI\ArgumentBuilder.cs" />
+    <Compile Include="CLI\ArgumentContent.cs" />
+    <Compile Include="CLI\ArgumentPattern.cs" />
+    <Compile Include="CLI\ArgumentType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -28,7 +28,7 @@ namespace SPICA.WinForms.Formats
 
                 if (Scene != null && Scene.Models.Count > 0) Skeleton = Scene.Models[0].Skeleton;
 
-                H3D Data = FormatIdentifier.IdentifyAndOpen(FileName, Skeleton);
+                H3D Data = ContainerIdentifier.IdentifyAndOpen(FileName, Skeleton);
 
                 if (Data != null)
                 {
@@ -77,10 +77,15 @@ namespace SPICA.WinForms.Formats
                 SaveDlg.Filter = 
                     "COLLADA 1.4.1|*.dae" +
                     "|Valve StudioMdl|*.smd" +
-                    "|Binary Ctr H3D|*.bch" +
+                    "|Binary Ctr H3D v33|*.bch" +
+                    "|Binary Ctr H3D v7|*.bch" +
                     "|Game Freak Binary Model Pack|*.gfbmdlp";
 
                 SaveDlg.FileName = "Model";
+                if (Scene.Models.Count > 0)
+                {
+                    SaveDlg.FileName = Scene.Models[0].Name;
+                }
 
                 if (SaveDlg.ShowDialog() == DialogResult.OK)
                 {
@@ -91,8 +96,17 @@ namespace SPICA.WinForms.Formats
                     {
                         case 1: new DAE(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 2: new SMD(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
-                        case 3: H3D.Save(SaveDlg.FileName, Scene); break;
+                        case 3:
+                            Scene.BackwardCompatibility = 0x21;
+                            Scene.ForwardCompatibility  = 0x21;
+                            H3D.Save(SaveDlg.FileName, Scene); 
+                            break;
                         case 4:
+                            Scene.BackwardCompatibility = 0x7;
+                            Scene.ForwardCompatibility  = 0x7;
+                            H3D.Save(SaveDlg.FileName, Scene); 
+                            break;
+                        case 5:
                             MessageBox.Show(
                                 "GFBMDLP writing comes with no warranty whatsoever. In fact, character and Pokémon models will most certainly not work at all.\n\n(Before you ask, this dialog can not be disabled. Intentionally.)",
                                 "Disclaimer",

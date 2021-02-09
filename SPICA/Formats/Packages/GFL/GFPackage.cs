@@ -51,6 +51,11 @@ namespace SPICA.Formats.Packages
                 {
                     Output.Merge(H3D.Open(File));
                 }
+
+                if (File[0] == 0 && File[1] == 0 && File[2] == 1 && File[3] == 0)
+                {
+                    Output.Merge(new SPICA.Formats.GFL2.GFModelPack(new MemoryStream(File)).ToH3D());
+                }
             }
 
             return Output;

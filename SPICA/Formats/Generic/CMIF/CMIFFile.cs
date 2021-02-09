@@ -639,7 +639,7 @@ namespace SPICA.Formats.Generic.CMIF
 
                 float[] table = new float[256];
                 int inputLength = bmp.Width;
-
+                asAbsolute = false;
                 if (asAbsolute)
                 {
                     inputLength = bmp.Width / 2;
