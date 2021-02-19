@@ -24,12 +24,12 @@ See `README.mono.md` for details.
 - Changed the scene merging flow to retain compatibility with the revision of the first loaded file (not forced 0x21 as in regular SPICA).
 - Ability to remove scene members with a button in the GUI
 - Improved format support for generic Game Freak containers
+- Pokémon X/Y mesh command buffer fix.
 - Small CtrH3D.Model bugfix with huge consequences, such as full support for Pokémon OR/AS overworld map models.
 - Hugely expanded OBJ importer with support for alpha blending, render layers, vertex colors (using an extra "vc" OBJ command outside of the common specifications) and safe material assignment.
 - Full support of the Common Interchange Format, allowing to convert CTRMap Creative Studio's scene files to H3D.
 
 # Non-features of this fork
 
-- Pokémon X/Y support.
 - Warranty that anything you import will work. In fact, most things won't.
-- Animation importing. Head over to CTRMap for that.
+- GFMotion Animation importing.
