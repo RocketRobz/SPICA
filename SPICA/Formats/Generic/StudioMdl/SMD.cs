@@ -442,7 +442,7 @@ namespace SPICA.Formats.Generic.StudioMdl
                 {
                     Material.TextureMappers[0].WrapU = PICATextureWrap.Mirror;
                     Material.MaterialParams.TextureCoords[0].Scale = new Vector2(2f, 1f);
-                    Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
+                    //Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
                 }
 
                 if (TextureSearchPath != null && !Output.Textures.Contains(TexName))
