@@ -824,6 +824,21 @@ namespace SPICA.Formats.Generic.CMIF
                     mat.MaterialParams.TextureCoords[i].Translation = VectorExtensions.ReadVector2(dis);
                     mat.MaterialParams.TextureCoords[i].Rotation = dis.ReadSingle();
                     mat.MaterialParams.TextureCoords[i].Scale = VectorExtensions.ReadVector2(dis);
+                    switch (uvPtrs[i])
+                    {
+                        default:
+                            mat.MaterialParams.TextureCoords[i].MappingType = H3DTextureMappingType.UvCoordinateMap;
+                            break;
+                        case 3:
+                            mat.MaterialParams.TextureCoords[i].MappingType = H3DTextureMappingType.CameraCubeEnvMap;
+                            break;
+                        case 4:
+                            mat.MaterialParams.TextureCoords[i].MappingType = H3DTextureMappingType.CameraSphereEnvMap;
+                            break;
+                        case 5:
+                            mat.MaterialParams.TextureCoords[i].MappingType = H3DTextureMappingType.ProjectionMap;
+                            break;
+                    }
 
                     mat.TextureMappers[i].WrapU = (PICATextureWrap)dis.ReadByte();
                     mat.TextureMappers[i].WrapV = (PICATextureWrap)dis.ReadByte();
@@ -835,6 +850,7 @@ namespace SPICA.Formats.Generic.CMIF
 
                 if (fileVersion >= 9)
                 {
+                    mat.MaterialParams.FresnelSelector = H3DFresnelSelector.No;
                     int lutCount = dis.ReadByte();
                     for (int i = 0; i < lutCount; i++)
                     {
@@ -867,9 +883,11 @@ namespace SPICA.Formats.Generic.CMIF
                                 mat.MaterialParams.LUTDist1SamplerName = LUTSamplerName;
                                 mat.MaterialParams.LUTInputSelection.Dist1 = input;
                                 break;
-                            case CMIFLUTName.FRESNEL:
+                            case CMIFLUTName.FRESNEL_PRI:
+                            case CMIFLUTName.FRESNEL_SEC:
                                 mat.MaterialParams.LUTFresnelSamplerName = LUTSamplerName;
                                 mat.MaterialParams.LUTInputSelection.Fresnel = input;
+                                mat.MaterialParams.FresnelSelector |= name == CMIFLUTName.FRESNEL_PRI ? H3DFresnelSelector.Pri : H3DFresnelSelector.Sec;
                                 break;
                         }
                     }
@@ -1436,7 +1454,8 @@ namespace SPICA.Formats.Generic.CMIF
             REFLEC_B,
             DIST_0,
             DIST_1,
-            FRESNEL
+            FRESNEL_PRI,
+            FRESNEL_SEC,
         }
 
         public enum MetaDataValueType

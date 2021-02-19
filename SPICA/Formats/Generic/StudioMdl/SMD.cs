@@ -438,9 +438,12 @@ namespace SPICA.Formats.Generic.StudioMdl
 
                 H3DMaterial Material = H3DMaterial.GetSimpleMaterial(Model.Name, MatName, TexName);
                 Material.MaterialParams.FaceCulling = PICAFaceCulling.BackFace;
-                //Material.TextureMappers[0].WrapU = PICATextureWrap.Mirror;
-                //Material.MaterialParams.TextureCoords[0].Scale = new Vector2(2f, 1f);
-                //Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
+                if (Material.Name.Contains("mirror"))
+                {
+                    Material.TextureMappers[0].WrapU = PICATextureWrap.Mirror;
+                    Material.MaterialParams.TextureCoords[0].Scale = new Vector2(2f, 1f);
+                    Material.MaterialParams.TextureCoords[0].Translation = new Vector2(0.5f, 0f);
+                }
 
                 if (TextureSearchPath != null && !Output.Textures.Contains(TexName))
                 {
@@ -450,10 +453,11 @@ namespace SPICA.Formats.Generic.StudioMdl
                     {
                         if (s.EndsWith(".png"))
                         {
-                            if (TexName == Path.GetFileNameWithoutExtension(s))
+                            string proposedName = Path.GetFileNameWithoutExtension(s);
+                            if (TexName == proposedName || Mesh.MaterialName == proposedName)
                             {
                                 H3DTexture tex = new H3DTexture(s);
-                                tex.Name = TexName;
+                                tex.Name = Path.GetFileName(s);
                                 if (!Output.Textures.Contains(tex.Name)) {
                                     Output.Textures.Add(tex);
                                 }
