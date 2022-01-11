@@ -28,8 +28,10 @@ namespace SPICA.WinForms.Formats
 
                 if (Scene != null && Scene.Models.Count > 0) Skeleton = Scene.Models[0].Skeleton;
 
+                // Determines the file type and attempts to open it as appropriate.
                 H3D Data = ContainerIdentifier.IdentifyAndOpen(FileName, Skeleton);
 
+                // Adds the file data to the Scene,
                 if (Data != null)
                 {
                     if (Scene == null)
@@ -47,6 +49,7 @@ namespace SPICA.WinForms.Formats
                 }
             }
 
+            // Show error if file couldn't be opened.
             if (OpenFiles == 0)
             {
                 MessageBox.Show(

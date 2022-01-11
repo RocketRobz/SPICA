@@ -31,6 +31,7 @@ namespace SPICA.WinForms.Formats
         {
             H3D Output = null;
 
+            // Deals with GFPackages - irrelevant for albw.
             using (FileStream FS = new FileStream(FileName, FileMode.Open)){
                 if (GFPackage.IsValidPackage(FS))
                 {
@@ -58,6 +59,7 @@ namespace SPICA.WinForms.Formats
 
             if (Output == null)
             {
+                // Continues and determines the file type.
                 Output = FormatIdentifier.IdentifyAndOpen(FileName, Skeleton);
             }
 

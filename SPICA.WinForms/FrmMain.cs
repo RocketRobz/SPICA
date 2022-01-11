@@ -32,7 +32,7 @@ namespace SPICA.WinForms
         private GridLines      UIGrid;
         private AxisLines      UIAxis;
         private AnimationGroup AnimGrp;
-        public H3D            Scene;
+        public  H3D            Scene;
         private Renderer       Renderer;
         private Shader         Shader;
 
@@ -80,6 +80,7 @@ namespace SPICA.WinForms
         
         private void FileOpen(string[] Files, bool MergeMode)
         {
+            // Attempting to open a different/new file (not merge).
             if (!MergeMode)
             {
                 Renderer.DeleteAll();
@@ -96,6 +97,7 @@ namespace SPICA.WinForms
 
                 ResetTransforms();
 
+                // Can open multiple files at once.
                 Scene = FileIO.Merge(Files, Renderer);
 
                 if (Scene != null)
@@ -119,6 +121,7 @@ namespace SPICA.WinForms
                     AnimGrp.Frame = 0;
                     AnimGrp.FramesCount = 0;
 
+                    // Select first model opened.
                     if (Scene.Models.Count > 0)
                     {
                         ModelsList.Select(0);
@@ -129,6 +132,7 @@ namespace SPICA.WinForms
                     }
                 }
             }
+            // Add file to existing scene (merge).
             else
             {
                 Scene = FileIO.Merge(Files, Renderer, Scene);

@@ -95,6 +95,7 @@ namespace SPICA.WinForms
 
                             switch (Format)
                             {
+                                // Creates either a DAE or a SMD object of the current scene and saves it to a file.
                                 case 0: new DAE(Data, Index).Save(FileName + ".dae"); break;
                                 case 1: new SMD(Data, Index).Save(FileName + ".smd"); break;
                             }
