@@ -4,6 +4,7 @@ using SPICA.Formats.CtrH3D.Animation;
 using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Formats.Generic.CMIF;
+using SPICA.Formats.Generic.COLLADA;
 using SPICA.Formats.Generic.StudioMdl;
 using SPICA.Formats.Generic.WavefrontOBJ;
 using SPICA.Formats.GFL;
@@ -33,6 +34,7 @@ namespace SPICA.Formats
 
             switch (Path.GetExtension(FileName).ToLower())
             {
+                // Not sure why this might be useful.
                 case ".txt":
                     H3D AllFiles = new H3D();
 
@@ -58,7 +60,14 @@ namespace SPICA.Formats
                         OutputH3D.SkeletalAnimations.Add(SklAnim);
                     }
                     return OutputH3D;
+
+                // Opens existing model/texture files.
+                // Creates a new object appropriate for the file and then calls the ToH3D() method of the new object.
+
+                // TODO: Add dae.
                 case ".smd": return new SMD(FileName).ToH3D(FilePath);
+                case ".dae": return new DAE(FileName).ToH3D(FilePath);
+                // TODO: Fix obj.
                 case ".obj": return new OBJ(FileName).ToH3D(FilePath);
                 case ".mtl": return new OBJ(FileName).ToH3D(FilePath);
                 case ".cmif": return new CMIFFile(new FileStream(FileName, FileMode.Open)).ToH3D();
@@ -85,6 +94,7 @@ namespace SPICA.Formats
             //Formats that can only be indetified by "magic numbers"
             H3D Output = null;
 
+            // Opens bch, mod, tex, mfx, cgfx and cmif files - most importantly, bch.
             using (FileStream FS = new FileStream(FileName, FileMode.Open))
             {
                 if (FS.Length > 4)
