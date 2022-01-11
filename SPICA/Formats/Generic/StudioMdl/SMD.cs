@@ -83,6 +83,7 @@ namespace SPICA.Formats.Generic.StudioMdl
 
         public SMD(string FileName)
         {
+            // Open smd from file.
             using (FileStream FS = new FileStream(FileName, FileMode.Open))
             {
                 SMDModelImpl(FS);
@@ -96,8 +97,11 @@ namespace SPICA.Formats.Generic.StudioMdl
 
         private void SMDModelImpl(Stream Stream)
         {
+            // Used to read the smd file.
             TextReader Reader = new StreamReader(Stream);
 
+            // Stores the current mesh.
+            // TODO: Can this only handle one mesh?
             SMDMesh CurrMesh = new SMDMesh();
 
             SMDSection CurrSection = SMDSection.None;
@@ -105,15 +109,19 @@ namespace SPICA.Formats.Generic.StudioMdl
             int SkeletalFrame = 0;
             int VerticesLine = 0;
 
+            // Reads each line.
             for (string Line; (Line = Reader.ReadLine()) != null;)
             {
+                // Splits current line at whitespace and stores in array.
                 string[] Params = Line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
+                // Line not blank.
                 if (Params.Length > 0)
                 {
                     switch (Params[0])
                     {
-                        case "version": break;
+                        // Checks if line is the start of a new data block.
+                        case "version":                                         break;
                         case "nodes":     CurrSection   = SMDSection.Nodes;     break;
                         case "skeleton":  CurrSection   = SMDSection.Skeleton;  break;
                         case "time":      SkeletalFrame = int.Parse(Params[1]); break;
@@ -121,6 +129,7 @@ namespace SPICA.Formats.Generic.StudioMdl
                         case "end":       CurrSection   = SMDSection.None;      break;
 
                         default:
+                            // Extracts nodes, skeleton and triangles.
                             switch (CurrSection)
                             {
                                 case SMDSection.Nodes:
@@ -159,6 +168,7 @@ namespace SPICA.Formats.Generic.StudioMdl
                                     break;
 
                                 case SMDSection.Triangles:
+                                    // If vertline number is divisible by 4 and line is not the name of the current material.
                                     if ((VerticesLine++ & 3) == 0)
                                     {
                                         if (CurrMesh.MaterialName != Line)
@@ -188,9 +198,11 @@ namespace SPICA.Formats.Generic.StudioMdl
                                             int NodesCount = int.Parse(Params[9]);
                                             if (NodesCount > 4)
                                             {
+                                                // TODO: Add proper user warning.
                                                 Console.WriteLine("Warning: Too many bone indices.");
                                             }
 
+                                            // TODO: Pad out end params if the 'optional' params are missing.
                                             for (int Node = 0; Node < Math.Min(NodesCount, 4); Node++)
                                             {
                                                 Vertex.Indices[Node] = int.Parse(Params[10 + Node * 2]);
@@ -298,13 +310,14 @@ namespace SPICA.Formats.Generic.StudioMdl
 
             string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
 
-            if (newName != "") ;
+            if (newName != "")
             {
                 Model.Name = newName;
             }
 
             ushort MaterialIndex = 0;
 
+            // Sets a flag if the file has a skeleton.
             if (Skeleton.Count > 0)
             {
                 Model.Flags = H3DModelFlags.HasSkeleton;
