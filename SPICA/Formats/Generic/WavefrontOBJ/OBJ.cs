@@ -209,6 +209,15 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 
             Dictionary<string, OBJMaterial> Materials = new Dictionary<string, OBJMaterial>();
 
+            string fileName = "";
+
+            string newFileName = Microsoft.VisualBasic.Interaction.InputBox("Enter the name of the file you just clicked (yes, this is very dumb): ", "Name", fileName);
+
+            if (newFileName != "")
+            {
+                fileName = newFileName;
+            }
+
             if (TextureAndMtlSearchPath != null)
             {
                 TextReader Reader = null;
@@ -218,7 +227,7 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
                 }
                 else
                 {
-                    string MaterialFile = Path.Combine(TextureAndMtlSearchPath, MtlFile);
+                    string MaterialFile = Path.Combine(TextureAndMtlSearchPath, fileName);
 
                     if (File.Exists(MaterialFile))
                     {
