@@ -732,7 +732,7 @@ namespace SPICA.Formats.Generic.COLLADA
                         PICAAttributeName.TexCoord2);
 
                 // Meshes.
-                H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
+/*                H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
                 {
                     Skinning = H3DMeshSkinning.Smooth,
                     MeshCenter = (MinVector + MaxVector) * 0.5f,
@@ -749,7 +749,7 @@ namespace SPICA.Formats.Generic.COLLADA
 
                 M.UpdateBoolUniforms(Material);
 
-                Model.AddMesh(M);
+                Model.AddMesh(M);*/
             }
 
             // TODO: Skeleton.
