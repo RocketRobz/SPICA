@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\FileIO.cs" />
+    <Compile Include="Formats\FormatIdentifier.cs" />
     <Compile Include="Formats\GFAreaLOD.cs" />
     <Compile Include="Formats\GFPkmnSklAnim.cs" />
     <Compile Include="Formats\ContainerIdentifier.cs" />
