@@ -55,9 +55,12 @@
             this.Animator = new System.Windows.Forms.Timer(this.components);
             this.TabIcons = new System.Windows.Forms.ImageList(this.components);
             this.MainContainer = new System.Windows.Forms.SplitContainer();
+            this.TabPageLUTs = new System.Windows.Forms.TabPage();
+            this.LUTsList = new SPICA.WinForms.GUI.SUIList();
             this.SideIcons = new System.Windows.Forms.ToolStrip();
             this.ToolButtonExport = new System.Windows.Forms.ToolStripButton();
             this.ToolButtonImport = new System.Windows.Forms.ToolStripButton();
+            this.ToolButtonRemove = new System.Windows.Forms.ToolStripButton();
             this.TBtnOpen = new System.Windows.Forms.ToolStripButton();
             this.TBtnMerge = new System.Windows.Forms.ToolStripButton();
             this.TBtnSave = new System.Windows.Forms.ToolStripButton();
@@ -101,9 +104,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.MainContainer)).BeginInit();
             this.MainContainer.Panel2.SuspendLayout();
             this.MainContainer.SuspendLayout();
-            this.SideIcons.SuspendLayout();
-            this.TopIcons.SuspendLayout();
-            this.SideTabs.SuspendLayout();
             this.TabPageModels.SuspendLayout();
             this.TabPageTextures.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TexturePreview)).BeginInit();
@@ -113,6 +113,10 @@
             this.TabPageMatAnims.SuspendLayout();
             this.TabPageVisAnims.SuspendLayout();
             this.TabPageCamAnims.SuspendLayout();
+            this.TabPageLUTs.SuspendLayout();
+            this.SideIcons.SuspendLayout();
+            this.TopIcons.SuspendLayout();
+            this.SideTabs.SuspendLayout();
             this.SuspendLayout();
             // 
             // TopMenu
@@ -500,6 +504,7 @@
             this.SideTabs.Controls.Add(this.TabPageMatAnims);
             this.SideTabs.Controls.Add(this.TabPageVisAnims);
             this.SideTabs.Controls.Add(this.TabPageCamAnims);
+            this.SideTabs.Controls.Add(this.TabPageLUTs);
             this.SideTabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SideTabs.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SideTabs.ForegroundColor = System.Drawing.Color.White;
@@ -786,6 +791,44 @@
             this.AnimSeekBar.Value = 0F;
             this.AnimSeekBar.Seek += new System.EventHandler(this.AnimSeekBar_Seek);
             this.AnimSeekBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.AnimSeekBar_MouseUp);
+            // TabPageLUTs
+            // 
+            this.TabPageLUTs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(53)))), ((int)(((byte)(48)))));
+            this.TabPageLUTs.Controls.Add(this.LUTsList);
+            this.TabPageLUTs.Location = new System.Drawing.Point(4, 28);
+            this.TabPageLUTs.Name = "TabPageLUTs";
+            this.TabPageLUTs.Size = new System.Drawing.Size(234, 414);
+            this.TabPageLUTs.TabIndex = 8;
+            this.TabPageLUTs.Text = "LUT";
+            // 
+            // LUTsList
+            // 
+            this.LUTsList.BackColor = System.Drawing.Color.Transparent;
+            this.LUTsList.BarColor = System.Drawing.Color.White;
+            this.LUTsList.BarColorHover = System.Drawing.Color.Gray;
+            this.LUTsList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LUTsList.ForeColor = System.Drawing.Color.White;
+            this.LUTsList.ItemHeight = 16;
+            this.LUTsList.Location = new System.Drawing.Point(0, 0);
+            this.LUTsList.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.LUTsList.MultiSelect = false;
+            this.LUTsList.Name = "LUTsList";
+            this.LUTsList.SelectedIndex = -1;
+            this.LUTsList.SelectionColor = System.Drawing.Color.Orange;
+            this.LUTsList.Size = new System.Drawing.Size(234, 414);
+            this.LUTsList.TabIndex = 0;
+            // 
+            // SideIcons
+            // 
+            this.SideIcons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(73)))), ((int)(((byte)(66)))), ((int)(((byte)(61)))));
+            this.SideIcons.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolButtonExport,
+            this.ToolButtonImport,
+            this.ToolButtonRemove});
+            this.SideIcons.Location = new System.Drawing.Point(0, 0);
+            this.SideIcons.Name = "SideIcons";
+            this.SideIcons.Size = new System.Drawing.Size(242, 31);
+            this.SideIcons.TabIndex = 1;
             // 
             // AnimButtonPrev
             // 
@@ -806,6 +849,28 @@
             this.AnimButtonSlowDown.Size = new System.Drawing.Size(28, 27);
             this.AnimButtonSlowDown.TabIndex = 10;
             this.AnimButtonSlowDown.Click += new System.EventHandler(this.AnimButtonSlowDown_Click);
+            // 
+            // ToolButtonImport
+            // 
+            this.ToolButtonImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolButtonImport.Image = ((System.Drawing.Image)(resources.GetObject("ToolButtonImport.Image")));
+            this.ToolButtonImport.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.ToolButtonImport.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolButtonImport.Name = "ToolButtonImport";
+            this.ToolButtonImport.Size = new System.Drawing.Size(28, 28);
+            this.ToolButtonImport.ToolTipText = "Import...";
+            this.ToolButtonImport.Click += new System.EventHandler(this.ToolButtonImport_Click);
+            // 
+            // ToolButtonRemove
+            // 
+            this.ToolButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ToolButtonRemove.Image = ((System.Drawing.Image)(resources.GetObject("ToolButtonRemove.Image")));
+            this.ToolButtonRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolButtonRemove.Name = "ToolButtonRemove";
+            this.ToolButtonRemove.Size = new System.Drawing.Size(54, 28);
+            this.ToolButtonRemove.Text = "Remove";
+            this.ToolButtonRemove.ToolTipText = "Removes the selected scene element";
+            this.ToolButtonRemove.Click += new System.EventHandler(this.ToolButtonRemove_Click);
             // 
             // AnimButtonPlayBackward
             // 
@@ -867,6 +932,73 @@
             this.AnimButtonNext.TabIndex = 2;
             this.AnimButtonNext.Click += new System.EventHandler(this.AnimButtonNext_Click);
             // 
+            // TBtnShowAxis
+            // 
+            this.TBtnShowAxis.CheckOnClick = true;
+            this.TBtnShowAxis.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TBtnShowAxis.Image = ((System.Drawing.Image)(resources.GetObject("TBtnShowAxis.Image")));
+            this.TBtnShowAxis.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.TBtnShowAxis.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TBtnShowAxis.Name = "TBtnShowAxis";
+            this.TBtnShowAxis.Size = new System.Drawing.Size(28, 27);
+            this.TBtnShowAxis.ToolTipText = "Toggle axis";
+            this.TBtnShowAxis.Click += new System.EventHandler(this.TBtnShowAxis_Click);
+            // 
+            // TBtnShowBones
+            // 
+            this.TBtnShowBones.CheckOnClick = true;
+            this.TBtnShowBones.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TBtnShowBones.Image = ((System.Drawing.Image)(resources.GetObject("TBtnShowBones.Image")));
+            this.TBtnShowBones.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.TBtnShowBones.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TBtnShowBones.Name = "TBtnShowBones";
+            this.TBtnShowBones.Size = new System.Drawing.Size(28, 27);
+            this.TBtnShowBones.ToolTipText = "Toggle skeleton";
+            // 
+            // TBtnShowInfo
+            // 
+            this.TBtnShowInfo.CheckOnClick = true;
+            this.TBtnShowInfo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TBtnShowInfo.Image = ((System.Drawing.Image)(resources.GetObject("TBtnShowInfo.Image")));
+            this.TBtnShowInfo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.TBtnShowInfo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TBtnShowInfo.Name = "TBtnShowInfo";
+            this.TBtnShowInfo.Size = new System.Drawing.Size(28, 27);
+            this.TBtnShowInfo.ToolTipText = "Toggle model info.";
+            // 
+            // TBtnShowSide
+            // 
+            this.TBtnShowSide.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.TBtnShowSide.CheckOnClick = true;
+            this.TBtnShowSide.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TBtnShowSide.Image = ((System.Drawing.Image)(resources.GetObject("TBtnShowSide.Image")));
+            this.TBtnShowSide.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.TBtnShowSide.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TBtnShowSide.Name = "TBtnShowSide";
+            this.TBtnShowSide.Size = new System.Drawing.Size(28, 27);
+            this.TBtnShowSide.ToolTipText = "Toggle side menu";
+            this.TBtnShowSide.Click += new System.EventHandler(this.TBtnShowSide_Click);
+            // 
+            // TopIcons
+            // 
+            this.TopIcons.AutoSize = false;
+            this.TopIcons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(73)))), ((int)(((byte)(66)))), ((int)(((byte)(61)))));
+            this.TopIcons.ForeColor = System.Drawing.Color.White;
+            this.TopIcons.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TBtnOpen,
+            this.TBtnMerge,
+            this.TBtnSave,
+            this.MenuSeparatorShowHideJustIgnore,
+            this.TBtnShowGrid,
+            this.TBtnShowAxis,
+            this.TBtnShowBones,
+            this.TBtnShowInfo,
+            this.TBtnShowSide});
+            this.TopIcons.Location = new System.Drawing.Point(0, 24);
+            this.TopIcons.Name = "TopIcons";
+            this.TopIcons.Size = new System.Drawing.Size(944, 30);
+            this.TopIcons.TabIndex = 3;
+            // 
             // FrmMain
             // 
             this.AllowDrop = true;
@@ -893,6 +1025,7 @@
             this.MainContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainContainer)).EndInit();
             this.MainContainer.ResumeLayout(false);
+            this.TabPageLUTs.ResumeLayout(false);
             this.SideIcons.ResumeLayout(false);
             this.SideIcons.PerformLayout();
             this.TopIcons.ResumeLayout(false);
@@ -980,5 +1113,8 @@
         private System.Windows.Forms.ToolStripMenuItem gFPAKExtractorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gFBMDLSwitchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton ToolButtonRemove;
+        private System.Windows.Forms.TabPage TabPageLUTs;
+        private GUI.SUIList LUTsList;
     }
 }

@@ -1,9 +1,10 @@
-﻿using SPICA.Formats.CtrH3D.Model.Material;
+﻿using OpenTK;
+using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Math3D;
 using SPICA.PICA.Commands;
 using SPICA.PICA.Shader;
 using SPICA.Rendering.Properties;
-
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -80,6 +81,8 @@ namespace SPICA.Rendering.Shaders
                 string[] ColorArgs = new string[3];
                 string[] AlphaArgs = new string[3];
 
+                //System.Numerics.Vector4 ConstantColor = Stage.Color.ToVector4();
+                //string Constant = ("vec4(" + ConstantColor.X + ";" + ConstantColor.Y + ";" + ConstantColor.Z + ";" + ConstantColor.W + ")").Replace(",", ".").Replace(";", ",");
                 string Constant;
 
                 switch (Params.GetConstantIndex(Index++))
@@ -172,22 +175,7 @@ namespace SPICA.Rendering.Shaders
                     SB.AppendLine("\tPrevious = Output;");
             }
 
-            if (Params.AlphaTest.Enabled)
-            {
-                string Reference = (Params.AlphaTest.Reference / 255f).ToString(CultureInfo.InvariantCulture);
-
-                //Note: This is the condition to pass the test, so we actually test the inverse to discard
-                switch (Params.AlphaTest.Function)
-                {
-                    case PICATestFunc.Never:    SB.AppendLine("\tdiscard;");                               break;
-                    case PICATestFunc.Equal:    SB.AppendLine($"\tif (Output.a != {Reference}) discard;"); break;
-                    case PICATestFunc.Notequal: SB.AppendLine($"\tif (Output.a == {Reference}) discard;"); break;
-                    case PICATestFunc.Less:     SB.AppendLine($"\tif (Output.a >= {Reference}) discard;"); break;
-                    case PICATestFunc.Lequal:   SB.AppendLine($"\tif (Output.a > {Reference}) discard;");  break;
-                    case PICATestFunc.Greater:  SB.AppendLine($"\tif (Output.a <= {Reference}) discard;"); break;
-                    case PICATestFunc.Gequal:   SB.AppendLine($"\tif (Output.a < {Reference}) discard;");  break;
-                }
-            }
+            //SB.AppendLine($"Output = vec4(Normal, 1.0);");
 
             SB.AppendLine("}");
 
@@ -261,7 +249,7 @@ namespace SPICA.Rendering.Shaders
             SB.AppendLine("\tfor (int i = 0; i < LightsCount; i++) {");
 
             SB.AppendLine("\t\tvec3 Light = (Lights[i].Directional != 0)" +
-                 " ? normalize(Lights[i].Position)" +
+                 $" ? normalize(Lights[i].Position)" +
                 $" : normalize(Lights[i].Position + {View}.xyz);");
 
             SB.AppendLine($"\t\tvec3 Half = normalize(normalize({View}.xyz) + Light);");
@@ -277,7 +265,6 @@ namespace SPICA.Rendering.Shaders
                 " : max(CosLightNormal, 0);");
 
             SB.AppendLine("\t\tfloat SpotAtt = 1;");
-            SB.AppendLine();
 
             SB.AppendLine("\t\tif (Lights[i].SpotAttEnb != 0) {");
             SB.AppendLine("\t\t\tfloat SpotIndex;");

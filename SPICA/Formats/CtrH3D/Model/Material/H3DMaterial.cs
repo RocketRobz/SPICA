@@ -15,7 +15,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
     [Inline]
     public class H3DMaterial : ICustomSerialization, INamed
     {
-        public readonly H3DMaterialParams MaterialParams;
+        public H3DMaterialParams MaterialParams;
 
         public H3DTexture Texture0;
         public H3DTexture Texture1;
@@ -87,11 +87,19 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.MaterialParams.DepthColorMask.AlphaWrite = true;
             Output.MaterialParams.DepthColorMask.DepthWrite = true;
 
+            Output.MaterialParams.StencilOperation.ZPassOp = PICAStencilOp.Replace;
+            
+            Output.MaterialParams.StencilTest.Enabled = true;
+            Output.MaterialParams.StencilTest.Function = PICATestFunc.Always;
+            Output.MaterialParams.StencilTest.BufferMask = 0xFF;
+            Output.MaterialParams.StencilTest.Mask = 0xFF;
+            Output.MaterialParams.StencilTest.Reference = 0x7F;
+
             Output.MaterialParams.ColorBufferRead  = false;
             Output.MaterialParams.ColorBufferWrite = true;
 
-            Output.MaterialParams.StencilBufferRead  = false;
-            Output.MaterialParams.StencilBufferWrite = false;
+            Output.MaterialParams.StencilBufferRead  = true;
+            Output.MaterialParams.StencilBufferWrite = true;
 
             Output.MaterialParams.DepthBufferRead  = true;
             Output.MaterialParams.DepthBufferWrite = true;
@@ -109,11 +117,22 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.TextureMappers[0].MinFilter = H3DTextureMinFilter.NearestMipmapLinear;
             Output.TextureMappers[0].MagFilter = H3DTextureMagFilter.Linear;
 
+            Output.TextureMappers[1].SamplerType = 1;
+            Output.TextureMappers[2].SamplerType = 1;
+
             Output.TextureMappers[0].BorderColor = RGBA.White;
 
             Output.MaterialParams.TextureCoords[0].Flags = H3DTextureCoordFlags.IsDirty;
             Output.MaterialParams.TextureCoords[0].ReferenceCameraIndex = -1;
             Output.MaterialParams.TextureCoords[0].Scale = Vector2.One;
+
+            Output.MaterialParams.TextureCoords[1].Flags = H3DTextureCoordFlags.IsDirty;
+            Output.MaterialParams.TextureCoords[1].ReferenceCameraIndex = -1;
+            Output.MaterialParams.TextureCoords[1].Scale = Vector2.One;
+
+            Output.MaterialParams.TextureCoords[2].Flags = H3DTextureCoordFlags.IsDirty;
+            Output.MaterialParams.TextureCoords[2].ReferenceCameraIndex = -1;
+            Output.MaterialParams.TextureCoords[2].Scale = Vector2.One;
 
             Output.MaterialParams.ShaderReference = $"{ShaderIndex}@{ShaderName}";
             Output.MaterialParams.ModelReference = $"{MaterialName}@{ModelName}";
@@ -164,6 +183,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
+            //Name = Name + "_material";
             //The original tool seems to add those (usually unused) names with the silhouette suffix
             Serializer.Sections[(uint)H3DSectionId.Strings].Values.Add(new RefValue()
             {
@@ -207,6 +227,11 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Writer.WriteEnd();
 
             TextureCommands = Writer.GetBuffer();
+
+            if (Serializer.FileVersion < 0x21 && TextureMappersCompat == null)
+            {
+                TextureMappersCompat = new H3DTextureMapper[3];
+            }
 
             if (TextureMappersCompat != null)
             {

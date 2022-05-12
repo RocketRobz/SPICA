@@ -542,7 +542,6 @@ namespace SPICA.Rendering
                 Shader.SetVtx3x4Array(DefaultShaderIds.WrldMtx, Matrix4.Identity);
 
                 int MaterialIndex = Mesh.BaseMesh.MaterialIndex;
-
                 H3DMaterialParams MP = BaseModel.Materials[MaterialIndex].MaterialParams;
 
                 MaterialState MS = MaterialStates[Mesh.BaseMesh.MaterialIndex];

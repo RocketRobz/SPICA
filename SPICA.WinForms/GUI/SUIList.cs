@@ -294,9 +294,13 @@ namespace SPICA.WinForms.GUI
 
                 string Item = null;
 
-                if (e.Action != NotifyCollectionChangedAction.Reset)
+                if (e.Action != NotifyCollectionChangedAction.Reset && e.Action != NotifyCollectionChangedAction.Remove)
                 {
                     Item = ((INamed)e.NewItems[0]).Name;
+                }
+                if (e.Action == NotifyCollectionChangedAction.Remove)
+                {
+                    Item = ((INamed)e.OldItems[0]).Name;
                 }
 
                 switch (e.Action)

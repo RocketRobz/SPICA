@@ -4,6 +4,7 @@ using OpenTK.Graphics;
 using SPICA.Formats;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Animation;
+using SPICA.Formats.CtrH3D.Texture;
 using SPICA.Formats.GFLX;
 using SPICA.Rendering;
 using SPICA.WinForms.Formats;
@@ -33,7 +34,7 @@ namespace SPICA.WinForms
         private GridLines      UIGrid;
         private AxisLines      UIAxis;
         private AnimationGroup AnimGrp;
-        private H3D            Scene;
+        public  H3D            Scene;
         private Renderer       Renderer;
         private Shader         Shader;
 
@@ -81,6 +82,7 @@ namespace SPICA.WinForms
         
         private void FileOpen(string[] Files, bool MergeMode)
         {
+            // Attempting to open a different/new file (not merge).
             if (!MergeMode)
             {
                 Renderer.DeleteAll();
@@ -97,36 +99,42 @@ namespace SPICA.WinForms
 
                 ResetTransforms();
 
+                // Can open multiple files at once.
                 Scene = FileIO.Merge(Files, Renderer);
 
-                TextureManager.Textures = Scene.Textures;
-
-                ModelsList.Bind(Scene.Models);
-                TexturesList.Bind(Scene.Textures);
-                CamerasList.Bind(Scene.Cameras);
-                LightsList.Bind(Scene.Lights);
-                SklAnimsList.Bind(Scene.SkeletalAnimations);
-                MatAnimsList.Bind(Scene.MaterialAnimations);
-                VisAnimsList.Bind(Scene.VisibilityAnimations);
-                CamAnimsList.Bind(Scene.CameraAnimations);
-
-                Animator.Enabled     = false;
-                LblAnimSpeed.Text    = string.Empty;
-                LblAnimLoopMode.Text = string.Empty;
-                AnimSeekBar.Value    = 0;
-                AnimSeekBar.Maximum  = 0;
-                AnimGrp.Frame        = 0;
-                AnimGrp.FramesCount  = 0;
-
-                if (Scene.Models.Count > 0)
+                if (Scene != null)
                 {
-                    ModelsList.Select(0);
-                }
-                else
-                {
-                    UpdateTransforms();
+                    TextureManager.Textures = Scene.Textures;
+                    ModelsList.Bind(Scene.Models);
+                    TexturesList.Bind(Scene.Textures);
+                    CamerasList.Bind(Scene.Cameras);
+                    LightsList.Bind(Scene.Lights);
+                    SklAnimsList.Bind(Scene.SkeletalAnimations);
+                    MatAnimsList.Bind(Scene.MaterialAnimations);
+                    VisAnimsList.Bind(Scene.VisibilityAnimations);
+                    CamAnimsList.Bind(Scene.CameraAnimations);
+                    LUTsList.Bind(Scene.LUTs);
+
+                    Animator.Enabled = false;
+                    LblAnimSpeed.Text = string.Empty;
+                    LblAnimLoopMode.Text = string.Empty;
+                    AnimSeekBar.Value = 0;
+                    AnimSeekBar.Maximum = 0;
+                    AnimGrp.Frame = 0;
+                    AnimGrp.FramesCount = 0;
+
+                    // Select first model opened.
+                    if (Scene.Models.Count > 0)
+                    {
+                        ModelsList.Select(0);
+                    }
+                    else
+                    {
+                        UpdateTransforms();
+                    }
                 }
             }
+            // Add file to existing scene (merge).
             else
             {
                 Scene = FileIO.Merge(Files, Renderer, Scene);
@@ -778,9 +786,108 @@ namespace SPICA.WinForms
         }
         #endregion
 
+        private void ToolButtonRemove_Click(object sender, EventArgs e)
+        {
+            if (SideTabs.SelectedTab == TabPageModels)
+            {
+                if (ModelsList.SelectedIndex >= 0)
+                {
+                    Scene.Models.Remove(ModelsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageTextures)
+            {
+                if (TexturesList.SelectedIndex >= 0)
+                {
+                    Scene.Textures.Remove(TexturesList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageCameras)
+            {
+                if (TexturesList.SelectedIndex >= 0)
+                {
+                    Scene.Cameras.Remove(CamerasList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageLights)
+            {
+                if (LightsList.SelectedIndex >= 0)
+                {
+                    Scene.Lights.Remove(LightsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageSklAnims)
+            {
+                if (SklAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.SkeletalAnimations.Remove(SklAnimsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageMatAnims)
+            {
+                if (MatAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.MaterialAnimations.Remove(MatAnimsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageVisAnims)
+            {
+                if (VisAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.VisibilityAnimations.Remove(VisAnimsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageCamAnims)
+            {
+                if (CamAnimsList.SelectedIndex >= 0)
+                {
+                    Scene.CameraAnimations.Remove(CamAnimsList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageCameras)
+            {
+                if (CamerasList.SelectedIndex >= 0)
+                {
+                    Scene.Cameras.Remove(CamerasList.SelectedIndex);
+                }
+            }
+            else if (SideTabs.SelectedTab == TabPageLUTs)
+            {
+                if (LUTsList.SelectedIndex >= 0)
+                {
+                    Scene.LUTs.Remove(LUTsList.SelectedIndex);
+                }
+            }
+        }
+
         private void ToolButtonImport_Click(object sender, EventArgs e)
         {
+            if (SideTabs.SelectedTab == TabPageTextures)
+            {
+                if (TexturesList.SelectedIndex != -1)
+                {
+                    IgnoreClicks = true;
+                    using (OpenFileDialog OpenDlg = new OpenFileDialog())
+                    {
+                        OpenDlg.Filter = "Portable Network Graphics|*.png";
+                        OpenDlg.Multiselect = false;
 
+                        if (OpenDlg.ShowDialog() == DialogResult.OK && OpenDlg.FileNames.Length > 0)
+                        {
+                            H3DTexture OriginTex = Scene.Textures[TexturesList.SelectedIndex];
+                            H3DTexture Tex = new H3DTexture(OpenDlg.FileName, true, OriginTex.Format);
+                            Tex.Name = OriginTex.Name;
+                            Scene.Textures[TexturesList.SelectedIndex] = Tex;
+                            TextureManager.FlushCache();
+                            TexturesList_SelectedIndexChanged(null, null);
+                            Renderer.Merge(Scene.Textures);
+                        }
+                    }
+                    Application.DoEvents();
+
+                    IgnoreClicks = false;
+                }
+            }
         }
     }
 }

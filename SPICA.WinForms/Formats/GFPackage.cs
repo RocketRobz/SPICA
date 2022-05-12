@@ -65,7 +65,7 @@ namespace SPICA.WinForms.Formats
 
         private static bool IsValidPackage(BinaryReader Reader)
         {
-            if (Reader.BaseStream.Length < 0x80) return false;
+            if (Reader.BaseStream.Length < 0x4) return false;
 
             byte Magic0 = Reader.ReadByte();
             byte Magic1 = Reader.ReadByte();
@@ -73,6 +73,22 @@ namespace SPICA.WinForms.Formats
             if (Magic0 < 'A' || Magic0 > 'Z' ||
                 Magic1 < 'A' || Magic1 > 'Z')
                 return false;
+
+            long len = Reader.BaseStream.Length;
+
+            int fileCount = Reader.ReadUInt16();
+            if (len < fileCount * 4 + 4)
+            {
+                return false;
+            }
+            for (int i = 0; i < fileCount; i++)
+            {
+                uint fileOffs = Reader.ReadUInt32();
+                if (fileOffs > len)
+                {
+                    return false;
+                }
+            }
 
             return true;
         }

@@ -93,6 +93,11 @@ namespace SPICA.Formats.GFL.Motion
 
                     if (BoneIndex != OldIndex)
                     {
+                        if (BoneIndex >= Skeleton.Count)
+                        {
+                            break;
+                        }
+
                         CurrentBone = new GF1MotBoneTransform()
                         {
                             Name         =  Skeleton[BoneIndex].Name,

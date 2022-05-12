@@ -147,7 +147,7 @@ namespace SPICA.Rendering.Shaders
 
             foreach (ShaderLabel Lbl in Program.Labels)
             {
-                if (Lbl.Name != "endmain")
+                if (Lbl.Name != "endmain" && !Labels.ContainsKey(Lbl.Offset))
                 {
                     Labels.Add(Lbl.Offset, Lbl.Name);
                 }

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SPICA</RootNamespace>
     <AssemblyName>SPICA</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -32,16 +32,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compression\LZ4.cs" />
     <Compile Include="Formats\Common\BitUtils.cs" />
+    <Compile Include="Formats\Common\Compression\LZ11.cs" />
+    <Compile Include="Formats\Common\PokemonBBoxGen.cs" />
     <Compile Include="Formats\Common\CRC32Hash.cs" />
     <Compile Include="Formats\Common\Exceptions.cs" />
     <Compile Include="Formats\Common\FNV1a.cs" />
@@ -292,6 +299,8 @@
     <Compile Include="Formats\CtrH3D\Scene\H3DScene.cs" />
     <Compile Include="Formats\CtrH3D\Shader\H3DShader.cs" />
     <Compile Include="Formats\CtrH3D\Texture\H3DTexture.cs" />
+    <Compile Include="Formats\FormatIdentifier.cs" />
+    <Compile Include="Formats\Generic\CMIF\CMIFFile.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAE.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAEAccessor.cs" />
     <Compile Include="Formats\Generic\COLLADA\DAEAnimation.cs" />
@@ -477,6 +486,8 @@
     <Compile Include="Serialization\Serializer\RefValue.cs" />
     <Compile Include="Serialization\Serializer\Section.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
