@@ -368,7 +368,7 @@ namespace SPICA.Formats.CtrH3D
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
             //The original tool seems to add this empty name for some reason.
-            Serializer.Sections[(uint)H3DSectionId.Strings].Values.Add(new RefValue(string.Empty));
+            //Serializer.Sections[(uint)H3DSectionId.Strings].Values.Add(new RefValue(string.Empty));
 
             return false;
         }

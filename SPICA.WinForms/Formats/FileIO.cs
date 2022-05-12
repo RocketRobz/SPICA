@@ -80,6 +80,7 @@ namespace SPICA.WinForms.Formats
                 SaveDlg.Filter = 
                     "COLLADA 1.4.1|*.dae" +
                     "|Valve StudioMdl|*.smd" +
+                    "|Binary Ctr H3D v34/v35 (Experimental)|*.bch" +
                     "|Binary Ctr H3D v33|*.bch" +
                     "|Binary Ctr H3D v7|*.bch" +
                     "|Game Freak Binary Model Pack|*.gfbmdlp";
@@ -100,16 +101,21 @@ namespace SPICA.WinForms.Formats
                         case 1: new DAE(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 2: new SMD(Scene, MdlIndex, AnimIndex).Save(SaveDlg.FileName); break;
                         case 3:
+                            Scene.BackwardCompatibility = 0x22;
+                            Scene.ForwardCompatibility = 0x23;
+                            H3D.Save(SaveDlg.FileName, Scene);
+                            break;
+                        case 4:
                             Scene.BackwardCompatibility = 0x21;
                             Scene.ForwardCompatibility  = 0x21;
                             H3D.Save(SaveDlg.FileName, Scene); 
                             break;
-                        case 4:
+                        case 5:
                             Scene.BackwardCompatibility = 0x7;
                             Scene.ForwardCompatibility  = 0x7;
                             H3D.Save(SaveDlg.FileName, Scene); 
                             break;
-                        case 5:
+                        case 6:
                             MessageBox.Show(
                                 "GFBMDLP writing comes with no warranty whatsoever. In fact, character and Pokémon models will most certainly not work at all.\n\n(Before you ask, this dialog can not be disabled. Intentionally.)",
                                 "Disclaimer",
