@@ -4,6 +4,9 @@ namespace SPICA.PICA.Commands
 {
     public struct PICAAttribute
     {
+        private const float SCALE_SHORT_UNIT = 1f / 32767f; //shorts are signed
+        private const float SCALE_UBYTE_UNIT = 1f / 255f;
+
         public PICAAttributeName Name;
         public PICAAttributeFormat Format;
         public int Elements;
@@ -47,7 +50,7 @@ namespace SPICA.PICA.Commands
                             Name     = PICAAttributeName.Color,
                             Format   = PICAAttributeFormat.Ubyte,
                             Elements = 4,
-                            Scale    = 1f / 255
+                            Scale    = SCALE_UBYTE_UNIT
                         });
                         break;
 
@@ -65,9 +68,11 @@ namespace SPICA.PICA.Commands
                         Output.Add(new PICAAttribute()
                         {
                             Name     = PICAAttributeName.BoneWeight,
-                            Format   = PICAAttributeFormat.Ubyte,
+                            Format   = PICAAttributeFormat.Short, 
+                            //Some higher quality models (Pokemon SwSh) get severely downgraded by the lack of precision on UBytes (yes, even the 1/255 makes a difference apparently)
+                            //Writing as full floats would be a waste of space, so we use int16s instead
                             Elements = 4,
-                            Scale    = 0.01f
+                            Scale    = SCALE_SHORT_UNIT
                         });
                         break;
                 }

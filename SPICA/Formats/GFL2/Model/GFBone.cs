@@ -1,6 +1,7 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D;
+using SPICA.Formats.CtrH3D.Model;
 using SPICA.Math3D;
-
 using System.IO;
 using System.Numerics;
 
@@ -25,6 +26,23 @@ namespace SPICA.Formats.GFL2.Model
             Scale       = Reader.ReadVector3();
             Rotation    = Reader.ReadVector3();
             Translation = Reader.ReadVector3();
+        }
+
+        public GFBone(H3DBone Bone, H3DDict<H3DBone> Skeleton)
+        {
+            Flags = (byte)(Bone.ParentIndex == -1 ? 2 : 1);
+            Name = Bone.Name;
+            Rotation = Bone.Rotation;
+            Translation = Bone.Translation;
+            Scale = Bone.Scale;
+            if (Bone.ParentIndex != -1)
+            {
+                Parent = Skeleton[Bone.ParentIndex].Name;
+            }
+            else
+            {
+                Parent = null;
+            }
         }
 
         public void Write(BinaryWriter Writer)

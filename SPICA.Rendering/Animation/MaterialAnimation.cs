@@ -76,6 +76,20 @@ namespace SPICA.Rendering.Animation
                 return States;
             }
 
+            //3 passes - first initialize original TC arrays, then set them per element, then convert to matrices
+            H3DTextureCoord[][] TCArray = new H3DTextureCoord[Materials.Count][];
+            for (int i = 0; i < Materials.Count; i++)
+            {
+                H3DMaterialParams Params = Materials[i].MaterialParams;
+
+                TCArray[i] = new H3DTextureCoord[]
+                {
+                    Params.TextureCoords[0],
+                    Params.TextureCoords[1],
+                    Params.TextureCoords[2]
+                };
+            }
+
             for (int i = 0; i < Elements.Count; i++)
             {
                 int Index = Indices[i];
@@ -88,12 +102,7 @@ namespace SPICA.Rendering.Animation
 
                 H3DAnimationElement Elem = Elements[i];
 
-                H3DTextureCoord[] TC = new H3DTextureCoord[]
-                {
-                    Params.TextureCoords[0],
-                    Params.TextureCoords[1],
-                    Params.TextureCoords[2]
-                };
+                H3DTextureCoord[] TC = TCArray[Index];
 
                 if (Elem.PrimitiveType == H3DPrimitiveType.RGBA)
                 {
@@ -161,6 +170,12 @@ namespace SPICA.Rendering.Animation
                         case H3DTargetType.MaterialMapper2Texture: State.Texture2Name = Name; break;
                     }
                 }
+            }
+
+            for (int i = 0; i < States.Length; i++)
+            {
+                MaterialState State = States[i];
+                H3DTextureCoord[] TC = TCArray[i];
 
                 State.Transforms[0] = TC[0].GetTransform().ToMatrix4();
                 State.Transforms[1] = TC[1].GetTransform().ToMatrix4();

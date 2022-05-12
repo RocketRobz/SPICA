@@ -6,8 +6,10 @@ using System.IO;
 
 namespace SPICA.Formats.GFL2.Texture
 {
-    public class GFTexture
+    public class GFTexture : INamed
     {
+        public const uint MagicNum = 0x15041213u;
+
         public string Name;
         public byte[] RawBuffer;
 
@@ -15,6 +17,8 @@ namespace SPICA.Formats.GFL2.Texture
         public ushort Height;
         public GFTextureFormat Format;
         public ushort MipmapSize;
+
+        string INamed.Name { get => Name; set => Name = value; }
 
         public GFTexture(H3DTexture tex) {
 			Name = tex.Name;
@@ -63,7 +67,7 @@ namespace SPICA.Formats.GFL2.Texture
 
 		public void Write(BinaryWriter Writer) 
 		{
-			Writer.Write(0x15041213);
+			Writer.Write(MagicNum);
 			Writer.Write(1);
 			new GFSection("texture", (uint)RawBuffer.Length + 0x68).Write(Writer);
 			Writer.Write(RawBuffer.Length);

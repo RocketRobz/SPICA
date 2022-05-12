@@ -47,5 +47,13 @@ namespace SPICA.Formats.GFL2
                 BaseStream.Seek(0x10 - (BaseStream.Position & 0xf), SeekOrigin.Current);
             }
         }
+
+        public static void WritePadding(Stream BaseStream)
+        {
+            while ((BaseStream.Position & 0xf) > 0)
+            {
+                BaseStream.WriteByte(0);
+            }
+        }
     }
 }

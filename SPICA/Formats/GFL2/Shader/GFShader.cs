@@ -1,4 +1,5 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Formats.CtrH3D.Model.Material;
 using SPICA.Math3D;
 using SPICA.PICA;
 using SPICA.PICA.Commands;
@@ -10,9 +11,17 @@ using System.Numerics;
 
 namespace SPICA.Formats.GFL2.Shader
 {
-    public class GFShader
+    public class GFShader : INamed
     {
+        public const uint MagicNum = 0x15041213u;
+        public const string MagicStr = "shader";
+
         public string Name;
+        public string FileName;
+
+        private byte[] RawData;
+
+        string INamed.Name { get => Name; set => Name = value; }
 
         public readonly PICATexEnvStage[] TexEnvStages;
 
@@ -41,6 +50,8 @@ namespace SPICA.Formats.GFL2.Shader
 
         public GFShader(BinaryReader Reader) : this()
         {
+            int RawDataStart = (int)Reader.BaseStream.Position;
+
             uint MagicNumber = Reader.ReadUInt32();
             uint ShaderCount = Reader.ReadUInt32();
 
@@ -60,7 +71,7 @@ namespace SPICA.Formats.GFL2.Shader
             uint CommandsHash   = Reader.ReadUInt32();
             uint Padding        = Reader.ReadUInt32();
 
-            string FileName = Reader.ReadPaddedString(0x40);
+            FileName = Reader.ReadPaddedString(0x40);
 
             uint[] Commands = new uint[CommandsLength >> 2];
 
@@ -68,6 +79,11 @@ namespace SPICA.Formats.GFL2.Shader
             {
                 Commands[Index] = Reader.ReadUInt32();
             }
+
+            int RawDataEnd = (int)Reader.BaseStream.Position;
+            int RawDataLength = RawDataEnd - RawDataStart;
+            Reader.BaseStream.Seek(RawDataStart, SeekOrigin.Begin);
+            RawData = Reader.ReadBytes(RawDataLength);
 
             uint[] OutMap = new uint[7];
 
@@ -288,6 +304,104 @@ namespace SPICA.Formats.GFL2.Shader
 
             VtxShaderUniforms = CmdReader.GetAllVertexShaderUniforms();
             GeoShaderUniforms = CmdReader.GetAllGeometryShaderUniforms();
+        }
+
+        public GFShader(H3DMaterial Material, string ShaderName)
+        {
+            Name = ShaderName;
+            FileName = ShaderName + ".gffsh";
+            TexEnvBufferColor = Material.MaterialParams.TexEnvBufferColor;
+            TexEnvStages = Material.MaterialParams.TexEnvStages;
+        }
+
+        public void Write(BinaryWriter Writer)
+        {
+            if (HasVertexShader)
+            {
+                Writer.Write(RawData);
+                return;
+            }
+            //Only support writing fragment shaders for now
+            Writer.Write(MagicNum);
+            Writer.Write(1);
+            GFSection.WritePadding(Writer.BaseStream);
+
+            GFSection ShaderHeader = new GFSection(MagicStr, 0);
+            int ShaderHeaderLengthPos = (int)(Writer.BaseStream.Position + 8);
+            ShaderHeader.Write(Writer);
+
+            int ShaderDataStart = (int)Writer.BaseStream.Position;
+            Writer.WritePaddedString(Name, 0x40);
+            Writer.Write(new Model.GFHashName(Name).Hash);
+            Writer.Write(1);
+            GFSection.WritePadding(Writer.BaseStream);
+
+            PICACommandWriter CmdWriter = new PICACommandWriter();
+
+            for (int Stage = 0; Stage < 6; Stage++)
+            {
+                PICARegister Register = PICARegister.GPUREG_DUMMY;
+
+                switch (Stage)
+                {
+                    case 0: Register = PICARegister.GPUREG_TEXENV0_SOURCE; break;
+                    case 1: Register = PICARegister.GPUREG_TEXENV1_SOURCE; break;
+                    case 2: Register = PICARegister.GPUREG_TEXENV2_SOURCE; break;
+                    case 3: Register = PICARegister.GPUREG_TEXENV3_SOURCE; break;
+                    case 4: Register = PICARegister.GPUREG_TEXENV4_SOURCE; break;
+                    case 5: Register = PICARegister.GPUREG_TEXENV5_SOURCE; break;
+                }
+
+                CmdWriter.SetCommand(Register, true,
+                    TexEnvStages[Stage].Source.ToUInt32(),
+                    TexEnvStages[Stage].Operand.ToUInt32(),
+                    TexEnvStages[Stage].Combiner.ToUInt32(),
+                    TexEnvStages[Stage].Color.ToUInt32(),
+                    TexEnvStages[Stage].Scale.ToUInt32());
+            }
+
+            uint UpdateBuffer = PICATexEnvStage.GetUpdateBuffer(TexEnvStages);
+
+            CmdWriter.SetCommand(PICARegister.GPUREG_TEXENV_UPDATE_BUFFER, UpdateBuffer, 2);
+
+            CmdWriter.SetCommand(PICARegister.GPUREG_TEXENV_BUFFER_COLOR, TexEnvBufferColor.ToUInt32());
+
+            CmdWriter.WriteEnd();
+
+            uint[] FragCmds = CmdWriter.GetBuffer();
+
+            byte[] RawCommandBuffer = new byte[FragCmds.Length * 4];
+            MemoryStream RawCommandStream = new MemoryStream();
+            using (BinaryWriter CommandRewriter = new BinaryWriter(RawCommandStream))
+            {
+                foreach (uint Command in FragCmds)
+                {
+                    CommandRewriter.Write(Command);
+                }
+            }
+            RawCommandBuffer = RawCommandStream.ToArray();
+            RawCommandStream.Close();
+
+            GFNV1 CommandsFNV = new GFNV1();
+            foreach (byte CmdByte in RawCommandBuffer)
+            {
+                CommandsFNV.Hash(CmdByte);
+            }
+
+            Writer.Write(RawCommandBuffer.Length);
+            Writer.Write(1);
+            Writer.Write(CommandsFNV.HashCode);
+            GFSection.WritePadding(Writer.BaseStream);
+
+            Writer.WritePaddedString(FileName, 0x40);
+
+            Writer.Write(RawCommandBuffer);
+
+            int RememberPosition = (int)Writer.BaseStream.Position;
+            int ShaderDataLength = RememberPosition - ShaderDataStart;
+            Writer.Seek(ShaderHeaderLengthPos, SeekOrigin.Begin);
+            Writer.Write(ShaderDataLength);
+            Writer.Seek(RememberPosition, SeekOrigin.Begin);
         }
 
         private void MakeArray(ShaderUniformVec4[] Uniforms, string Name)

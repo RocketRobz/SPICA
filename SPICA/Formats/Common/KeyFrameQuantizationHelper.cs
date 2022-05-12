@@ -91,7 +91,6 @@ namespace SPICA.Formats.Common
         public static KeyFrame ReadStepLinear32(this BinaryReader Reader)
         {
             uint FrameVal = Reader.ReadUInt32();
-
             return new KeyFrame(
                 (FrameVal >>  0) & 0xfff,
                 (FrameVal >> 12) & 0xfffff);

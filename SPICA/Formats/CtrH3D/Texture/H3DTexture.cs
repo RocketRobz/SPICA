@@ -57,20 +57,47 @@ namespace SPICA.Formats.CtrH3D.Texture
 
         public H3DTexture() { }
 
-        public H3DTexture(string FileName)
+        public H3DTexture(string FileName, bool withoutExtension = false, Nullable<PICATextureFormat> desiredFormat = null)
         {
             Bitmap Img = new Bitmap(FileName);
 
-            if (Img.PixelFormat != PixelFormat.Format32bppArgb)
-            {
-                Img = new Bitmap(Img);
-            }
-
             using (Img)
             {
-                Name = Path.GetFileNameWithoutExtension(FileName);
+                Name = withoutExtension ? Path.GetFileNameWithoutExtension(FileName) : Path.GetFileName(FileName);
 
-                Format = PICATextureFormat.RGBA8;
+                if (desiredFormat == null)
+                {
+                    Format = Image.IsAlphaPixelFormat(Img.PixelFormat) ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
+                }
+                else
+                {
+                    Format = (PICATextureFormat)desiredFormat;
+                }
+
+                if (Format == PICATextureFormat.ETC1A4)
+                {
+                    bool HasAlpha = false;
+                    //check if the alpha is actually used
+                    for (int x = 0; x < Img.Width; x++)
+                    {
+                        for (int y = 0; y < Img.Height; y++)
+                        {
+                            if (Img.GetPixel(x, y).A != 255)
+                            {
+                                HasAlpha = true;
+                                goto ApplyAlpha;
+                            }
+                        }
+                    }
+
+                    ApplyAlpha:
+                    Format = HasAlpha ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
+                }
+
+                if (FileName.Contains("rgba"))
+                {
+                    Format = PICATextureFormat.RGBA8;
+                }
 
                 H3DTextureImpl(Img);
             }

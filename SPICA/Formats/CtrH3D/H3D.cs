@@ -6,15 +6,20 @@ using SPICA.Formats.CtrH3D.Light;
 using SPICA.Formats.CtrH3D.LUT;
 using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Model.Material;
+using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.Formats.CtrH3D.Scene;
 using SPICA.Formats.CtrH3D.Shader;
 using SPICA.Formats.CtrH3D.Texture;
+using SPICA.Math3D;
+using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 
 namespace SPICA.Formats.CtrH3D
 {
@@ -30,6 +35,8 @@ namespace SPICA.Formats.CtrH3D
 
     public class H3D : ICustomSerialization
     {
+        [Ignore] public List<object> SourceData = new List<object>();
+
         public readonly H3DDict<H3DModel>          Models;
         public readonly H3DDict<H3DMaterialParams> Materials;
         public readonly H3DDict<H3DShader>         Shaders;
@@ -106,11 +113,112 @@ namespace SPICA.Formats.CtrH3D
 
             Scene.Flags = Header.Flags;
 
+            /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            }));*/
+
+            if (Scene.Models.Count > 0)
+            {
+                foreach (H3DMaterial mat in Scene.Models[0].Materials)
+                {
+                    /*  mat.MaterialParams.StencilTest.Reference = 255;
+                       mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeID")].Values[0] = 255;
+                       //mat.MaterialParams.MetaData[mat.MaterialParams.MetaData.Find("$EdgeType")].Values[0] = 0;
+                    //mat.MaterialParams.MetaData.Clear();
+                    //mat.MaterialParams.VtxShaderUniforms.Clear();
+                    mat.MaterialParams.FragmentFlags = H3DFragmentFlags.IsLUTReflectionEnabled;
+                    mat.MaterialParams.LUTInputSelection.ReflecR = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecG = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTInputSelection.ReflecB = PICALUTInput.CosNormalView;
+                    mat.MaterialParams.LUTReflecRSamplerName = null;
+                    mat.MaterialParams.LUTReflecRTableName = null;
+                    mat.MaterialParams.LUTReflecGSamplerName = null;
+                    mat.MaterialParams.LUTReflecGTableName = null;
+                    mat.MaterialParams.LUTReflecBSamplerName = null;
+                    mat.MaterialParams.LUTReflecBTableName = null;*/
+                    /*mat.MaterialParams.TextureCoords[0].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[1].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[2].Flags = H3DTextureCoordFlags.IsDirty;
+                    mat.MaterialParams.TextureCoords[0].ReferenceCameraIndex = 0;
+                    mat.MaterialParams.TextureCoords[1].ReferenceCameraIndex = 0;
+                    mat.MaterialParams.TextureCoords[2].ReferenceCameraIndex = 0;*/
+                }
+                /*Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(Scene, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                }));*/
+            }
+
+            /*RGBA DesiredDarkYellow = new RGBA(0, 128, 0, 255);
+            RGBA DesiredLightYellow = new RGBA(0, 255, 0, 255);
+            RGBA DesiredCrimson = new RGBA(0, 128, 0, 255);
+
+            List<string> MaterialNamesToReplace = new List<string>(new string[] { "ArmL_Lay1_yellow", "ArmR_Lay1_yellow", "BodyFront_Lay1_yellow", "BodyMid_Lay1_yellow", "Tail_Lay1_yellow" });
+
+            foreach (H3DModel Model in Scene.Models)
+            {
+                foreach (H3DMaterial Material in Model.Materials)
+                {
+                    if (MaterialNamesToReplace.Contains(Material.Name))
+                    {
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(2), Material.MaterialParams, DesiredDarkYellow);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(3), Material.MaterialParams, DesiredLightYellow);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(4), Material.MaterialParams, DesiredCrimson);
+                    }
+                }
+            }*/
+
+            /*RGBA DesiredOuterFireColor = new RGBA(0, 255, 0, 255); //Change this to whatever color you want the fire to be
+            RGBA DesiredInnerFireColor = new RGBA(0, 128, 0, 255); //Change these to whatever color you want the fire to be
+
+            foreach (H3DModel Model in Scene.Models)
+            {
+                foreach (H3DMaterial Material in Model.Materials)
+                {
+                    if (Material.Name.Equals("FireStenA"))
+                    {
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(0), Material.MaterialParams, DesiredOuterFireColor);
+                        SetConstantColor(Material.MaterialParams.GetConstantIndex(1), Material.MaterialParams, DesiredInnerFireColor);
+                    }
+                }
+            }*/
+
             return Scene;
+        }
+
+        private static void SetConstantColor(int id, H3DMaterialParams mparams, RGBA target)
+        {
+            switch (id)
+            {
+                case 0:
+                    mparams.Constant0Color = target;
+                    break;
+                case 1:
+                    mparams.Constant1Color = target;
+                    break;
+                case 2:
+                    mparams.Constant2Color = target;
+                    break;
+                case 3:
+                    mparams.Constant3Color = target;
+                    break;
+                case 4:
+                    mparams.Constant4Color = target;
+                    break;
+                case 5:
+                    mparams.Constant5Color = target;
+                    break;
+            }
         }
 
         public static void Save(string FileName, H3D Scene)
         {
+            foreach (H3DModel Model in Scene.Models)
+            {
+                PokemonBBoxGen.CreateModelBBox(Model);
+            }
+
             using (FileStream FS = new FileStream(FileName, FileMode.Create))
             {
                 H3DHeader Header = new H3DHeader();
@@ -190,21 +298,26 @@ namespace SPICA.Formats.CtrH3D
 
         public void Merge(H3D SceneData)
         {
-            AddUnique(SceneData.Models,               Models);
-            AddUnique(SceneData.Materials,            Materials);
-            AddUnique(SceneData.Shaders,              Shaders);
-            AddUnique(SceneData.Textures,             Textures);
-            AddUnique(SceneData.LUTs,                 LUTs);
-            AddUnique(SceneData.Lights,               Lights);
-            AddUnique(SceneData.Cameras,              Cameras);
-            AddUnique(SceneData.Fogs,                 Fogs);
-            AddUnique(SceneData.SkeletalAnimations,   SkeletalAnimations);
-            AddUnique(SceneData.MaterialAnimations,   MaterialAnimations);
-            AddUnique(SceneData.VisibilityAnimations, VisibilityAnimations);
-            AddUnique(SceneData.LightAnimations,      LightAnimations);
-            AddUnique(SceneData.CameraAnimations,     CameraAnimations);
-            AddUnique(SceneData.FogAnimations,        FogAnimations);
-            AddUnique(SceneData.Scenes,               Scenes);
+            if (SceneData != null)
+            {
+                AddUnique(SceneData.Models, Models);
+                AddUnique(SceneData.Materials, Materials);
+                AddUnique(SceneData.Shaders, Shaders);
+                AddUnique(SceneData.Textures, Textures);
+                AddUnique(SceneData.LUTs, LUTs);
+                AddUnique(SceneData.Lights, Lights);
+                AddUnique(SceneData.Cameras, Cameras);
+                AddUnique(SceneData.Fogs, Fogs);
+                AddUnique(SceneData.SkeletalAnimations, SkeletalAnimations);
+                AddUnique(SceneData.MaterialAnimations, MaterialAnimations);
+                AddUnique(SceneData.VisibilityAnimations, VisibilityAnimations);
+                AddUnique(SceneData.LightAnimations, LightAnimations);
+                AddUnique(SceneData.CameraAnimations, CameraAnimations);
+                AddUnique(SceneData.FogAnimations, FogAnimations);
+                AddUnique(SceneData.Scenes, Scenes);
+
+                SourceData.AddRange(SceneData.SourceData);
+            }
         }
 
         private void AddUnique<T>(H3DDict<T> Src, H3DDict<T> Tgt) where T : INamed
@@ -217,9 +330,13 @@ namespace SPICA.Formats.CtrH3D
 
                 int Index = 0;
 
-                while (Tgt.Contains(Name))
+                /*while (Tgt.Contains(Name))
                 {
                     Name = $"{Value.Name}_{++Index}";
+                }*/
+                if (Tgt.Contains(Name))
+                {
+                    Tgt.Remove(Tgt[Tgt.Find(Name)]);
                 }
 
                 Value.Name = Name;
@@ -238,7 +355,10 @@ namespace SPICA.Formats.CtrH3D
                 {
                     //Note: The IF is a workaround for multiple models with same material names.
                     //This kind of problem doesn't happen on BCH, but may happen on converted formats.
-                    if (!Materials.Contains(Material.Name)) Materials.Add(Material.MaterialParams);
+                    if (!Materials.Contains(Material.Name))
+                    {
+                        Materials.Add(Material.MaterialParams);
+                    }
                 }
             }
         }

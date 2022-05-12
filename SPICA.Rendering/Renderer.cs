@@ -94,6 +94,10 @@ namespace SPICA.Rendering
         {
             foreach (H3DTexture Texture in Textures)
             {
+                if (this.Textures.ContainsKey(Texture.Name))
+                {
+                    this.Textures.Remove(Texture.Name);
+                }
                 this.Textures.Add(Texture.Name, new Texture(Texture));
             }
         }
@@ -102,7 +106,10 @@ namespace SPICA.Rendering
         {
             foreach (H3DLUT LUT in LUTs)
             {
-                this.LUTs.Add(LUT.Name, new LUT(LUT));
+                if (!this.LUTs.ContainsKey(LUT.Name))
+                {
+                    this.LUTs.Add(LUT.Name, new LUT(LUT));
+                }
             }
         }
 
@@ -120,7 +127,12 @@ namespace SPICA.Rendering
             {
                 foreach (H3DShader Shader in Shaders)
                 {
-                    this.Shaders.Add(Shader.Name, new VertexShader(Shader));
+                    if (!this.Shaders.ContainsKey(Shader.Name))
+                    {
+                        VertexShader VSh = new VertexShader(Shader);
+                        this.Shaders.Add(Shader.Name, VSh);
+                        //System.IO.File.WriteAllText("D:/_REWorkspace/shader/gfl_pokemon/" + VSh.Name + ".vsh", VSh.CodeVtx);
+                    }
                 }
 
                 UpdateAllShaders();

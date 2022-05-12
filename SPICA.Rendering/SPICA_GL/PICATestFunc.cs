@@ -35,6 +35,11 @@ namespace SPICA.Rendering.SPICA_GL
             return (DepthFunction)ToFunction(Func);
         }
 
+        public static AlphaFunction ToAlphaFunction(this PICATestFunc Func)
+        {
+            return (AlphaFunction)ToFunction(Func);
+        }
+
         public static void SetGL(this PICAStencilTest StencilTest)
         {
             GL.StencilFunc(
@@ -54,6 +59,20 @@ namespace SPICA.Rendering.SPICA_GL
                 DepthColorMask.GreenWrite,
                 DepthColorMask.BlueWrite,
                 DepthColorMask.AlphaWrite);
+        }
+
+        public static void SetGL(this PICAAlphaTest AlphaTest)
+        {
+            if (AlphaTest.Enabled)
+            {
+                GL.Enable(EnableCap.AlphaTest);
+            }
+            else
+            {
+                GL.Disable(EnableCap.AlphaTest);
+            }
+
+            GL.AlphaFunc(AlphaTest.Function.ToAlphaFunction(), AlphaTest.Reference / 255f);
         }
     }
 }

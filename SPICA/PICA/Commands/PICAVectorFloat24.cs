@@ -46,6 +46,8 @@ namespace SPICA.PICA.Commands
             this.W = W;
         }
 
+        public PICAVectorFloat24(Vector4 Vector) : this(Vector.X, Vector.Y, Vector.Z, Vector.W) { }
+
         public override bool Equals(object obj)
         {
             return obj is PICAVectorFloat24 && (PICAVectorFloat24)obj == this;

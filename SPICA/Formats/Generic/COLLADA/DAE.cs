@@ -11,6 +11,7 @@ using SPICA.PICA.Converters;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -36,14 +37,45 @@ namespace SPICA.Formats.Generic.COLLADA
 
         public DAEScene scene = new DAEScene();
 
-        public DAE() { }
+        public DAE() {}
 
+        public DAE(string FileName)
+        {
+            DAE XmlData;
+
+            using (FileStream FS = new FileStream(FileName, FileMode.Open))
+            {
+                XmlSerializer Deserializer = new XmlSerializer(typeof(DAE));
+
+                object DAEObject = Deserializer.Deserialize(FS);
+
+                XmlData = (DAE)DAEObject;
+            }
+
+            asset = XmlData.asset;
+
+            library_animations    = XmlData.library_animations;
+            library_images        = XmlData.library_images;
+            library_materials     = XmlData.library_materials;
+            library_effects       = XmlData.library_effects;
+            library_geometries    = XmlData.library_geometries;
+            library_controllers   = XmlData.library_controllers;
+            library_visual_scenes = XmlData.library_visual_scenes;
+
+            scene = XmlData.scene;
+
+            Save(@"C:\Users\Elisabeth\Desktop\test.dae");
+        }
+
+        // Takes a given scene and converts it to a DAE object.
         public DAE(H3D Scene, int MdlIndex, int AnimIndex = -1)
         {
+            // Number of models.
             if (MdlIndex != -1)
             {
                 library_visual_scenes = new List<DAEVisualScene>();
 
+                // The current model.
                 H3DModel Mdl = Scene.Models[MdlIndex];
 
                 DAEVisualScene VN = new DAEVisualScene();
@@ -58,10 +90,13 @@ namespace SPICA.Formats.Generic.COLLADA
                     library_effects   = new List<DAEEffect>();
                 }
 
+                // Adds the materials and effects to the DAE object.
                 foreach (H3DMaterial Mtl in Mdl.Materials)
                 {
                     string MtlName = $"{MdlIndex.ToString("D2")}_{Mtl.Name}";
 
+                    // START: DAEEffect.
+                    // Each material has an effect (assumed).
                     DAEEffect Effect = new DAEEffect();
 
                     Effect.name = $"{Mtl.Name}_eff";
@@ -93,7 +128,9 @@ namespace SPICA.Formats.Generic.COLLADA
                     Effect.profile_COMMON.technique.phong.diffuse.texture.texture = ImgSampler.sid;
 
                     library_effects.Add(Effect);
+                    // END: DAEEffect.
 
+                    // Each material links to an effect.
                     DAEMaterial Material = new DAEMaterial();
 
                     Material.name = $"{Mtl.Name}_mat";
@@ -107,16 +144,19 @@ namespace SPICA.Formats.Generic.COLLADA
                 //Skeleton nodes
                 string RootBoneId = string.Empty;
 
+                // Adds the skeleton to the DAE object (rather complex :/).
                 if ((Mdl.Skeleton?.Count ?? 0) > 0)
                 {
                     Queue<Tuple<H3DBone, DAENode>> ChildBones = new Queue<Tuple<H3DBone, DAENode>>();
 
+                    // Add root node to queue of child bones.
                     DAENode RootNode = new DAENode();
 
                     ChildBones.Enqueue(Tuple.Create(Mdl.Skeleton[0], RootNode));
 
                     RootBoneId = $"#{Mdl.Skeleton[0].Name}_bone_id";
 
+                    // While there are still child bones to evaluate.
                     while (ChildBones.Count > 0)
                     {
                         Tuple<H3DBone, DAENode> Bone_Node = ChildBones.Dequeue();
@@ -157,17 +197,22 @@ namespace SPICA.Formats.Generic.COLLADA
                     library_geometries = new List<DAEGeometry>();
                 }
 
+                // Adds the meshes to the DAE object (reeeeaaaaaallllyyy complex!).
                 for (int MeshIndex = 0; MeshIndex < Mdl.Meshes.Count; MeshIndex++)
                 {
+                    // Ignore silhouettes.
                     if (Mdl.Meshes[MeshIndex].Type == H3DMeshType.Silhouette) continue;
 
+                    // The current mesh.
                     H3DMesh Mesh = Mdl.Meshes[MeshIndex];
 
+                    // Array of vertices for the current mesh.
                     PICAVertex[] Vertices = MeshTransform.GetWorldSpaceVertices(Mdl.Skeleton, Mesh);
 
                     string MtlName = $"Mdl_{MdlIndex}_Mtl_{Mdl.Materials[Mesh.MaterialIndex].Name}";
                     string MtlTgt = library_materials[Mesh.MaterialIndex].id;
 
+                    // Loops through sub meshes.
                     for (int SMIndex = 0; SMIndex < Mesh.SubMeshes.Count; SMIndex++)
                     {
                         H3DSubMesh SM = Mesh.SubMeshes[SMIndex];
@@ -435,6 +480,7 @@ namespace SPICA.Formats.Generic.COLLADA
                     library_images = new List<DAEImage>();
                 }
 
+                // Add the textures to the current DAE object.
                 foreach (H3DTexture Tex in Scene.Textures)
                 {
                     library_images.Add(new DAEImage()
@@ -445,6 +491,7 @@ namespace SPICA.Formats.Generic.COLLADA
                 }
             } //MdlIndex != -1
 
+            // Add the animations to the current DAE object.
             if (AnimIndex != -1)
             {
                 library_animations = new List<DAEAnimation>();
@@ -626,6 +673,7 @@ namespace SPICA.Formats.Generic.COLLADA
             } //AnimIndex != -1
         }
 
+        // Saves the instance of the DAE object called to an xml file with the given name.
         public void Save(string FileName)
         {
             using (FileStream FS = new FileStream(FileName, FileMode.Create))
@@ -634,6 +682,83 @@ namespace SPICA.Formats.Generic.COLLADA
 
                 Serializer.Serialize(FS, this);
             }
+        }
+
+        // Adds the current DAE object to the H3D scene (what actually displays the model).
+        public H3D ToH3D(string TextureSearchPath = null)
+        {
+            H3D Output = new H3D();
+
+            H3DModel Model = new H3DModel();
+
+            // Hard-coded name while developing/testing.
+            Model.Name = "ShieldB";
+
+            /*string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter model name: ", "Name", Model.Name);
+
+            if (newName != "")
+            {
+                Model.Name = newName;
+            }*/
+
+            ushort MaterialIndex = 0;
+
+            // Sets a flag if the file has a skeleton.
+            if (library_visual_scenes[0].node.Count > 0)
+            {
+                Model.Flags = H3DModelFlags.HasSkeleton;
+            }
+
+            Model.BoneScaling = H3DBoneScaling.Maya;
+            Model.MeshNodesVisibility.Add(true);
+
+            // Geometry === mesh.
+            // foreach (SMDMesh Mesh in Meshes)
+            foreach (DAEGeometry geometry in library_geometries)
+            {
+                //Dictionary<PICAVertex, int> Vertices = new Dictionary<PICAVertex, int>();
+                //List<H3DSubMesh> SubMeshes = new List<H3DSubMesh>();
+
+                // TODO: Vertices
+                // TODO: SubMeshes
+
+                List<PICAAttribute> Attributes = PICAAttribute.GetAttributes(
+                        PICAAttributeName.Position,
+                        PICAAttributeName.Normal,
+                        PICAAttributeName.Tangent,
+                        PICAAttributeName.Color,
+                        PICAAttributeName.TexCoord0,
+                        PICAAttributeName.TexCoord1,
+                        PICAAttributeName.TexCoord2);
+
+                // Meshes.
+/*                H3DMesh M = new H3DMesh(Vertices.Keys, Attributes, SubMeshes)
+                {
+                    Skinning = H3DMeshSkinning.Smooth,
+                    MeshCenter = (MinVector + MaxVector) * 0.5f,
+                    MaterialIndex = MaterialIndex
+                };
+
+                // Materials.
+
+                // ~~~~
+                // TODO
+                // ~~~~
+
+                Model.Materials.Add(Material);
+
+                M.UpdateBoolUniforms(Material);
+
+                Model.AddMesh(M);*/
+            }
+
+            // TODO: Skeleton.
+
+            Output.Models.Add(Model);
+
+            Output.CopyMaterials();
+
+            return Output;
         }
     }
 }

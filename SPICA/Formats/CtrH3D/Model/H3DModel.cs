@@ -52,7 +52,7 @@ namespace SPICA.Formats.CtrH3D.Model
 
         public H3DModel()
         {
-            WorldTransform = new Matrix3x4();
+            WorldTransform = Matrix3x4.Identity;
 
             Materials = new H3DDict<H3DMaterial>();
 
@@ -68,6 +68,7 @@ namespace SPICA.Formats.CtrH3D.Model
             Skeleton = new H3DDict<H3DBone>();
 
             MeshNodesVisibility = new List<bool>();
+            MeshNodesTree = new H3DPatriciaTree();
 
             UserDefinedAddress = 0; //SBZ, set by program on 3DS
         }

@@ -9,6 +9,11 @@
         {
             Color = new PICATextureCombinerSource[3];
             Alpha = new PICATextureCombinerSource[3];
+            for (int i = 0; i < 3; i++)
+            {
+                Color[i] = PICATextureCombinerSource.Previous;
+                Alpha[i] = PICATextureCombinerSource.Previous;
+            }
         }
 
         public PICATexEnvSource(uint Param)

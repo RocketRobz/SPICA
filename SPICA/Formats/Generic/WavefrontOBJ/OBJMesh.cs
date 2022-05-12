@@ -6,9 +6,12 @@ namespace SPICA.Formats.Generic.WavefrontOBJ
 {
     class OBJMesh
     {
+        public string Name;
+
         public bool HasPosition;
         public bool HasNormal;
         public bool HasTexCoord;
+        public bool HasColor;
 
         public string MaterialName;
 

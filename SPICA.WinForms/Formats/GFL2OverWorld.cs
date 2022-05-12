@@ -101,7 +101,7 @@ namespace SPICA.WinForms.Formats
                         if (Signature == "texture")
                             MdlPack.Textures.Add(new GFTexture(Reader));
                         else
-                            MdlPack.Shaders.Add(new GFShader(Reader));
+                            MdlPack.MaterialShaders.Add(new GFShader(Reader));
 
                         break;
                 }

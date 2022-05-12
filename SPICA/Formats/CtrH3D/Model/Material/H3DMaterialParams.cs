@@ -14,7 +14,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 {
     public class H3DMaterialParams : ICustomSerialization, INamed
     {
-        private uint UniqueId;
+        public uint UniqueId;
 
         public H3DMaterialFlags Flags;
         public H3DFragmentFlags FragmentFlags;
@@ -166,7 +166,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
         [Ignore] public bool DepthBufferRead;
         [Ignore] public bool DepthBufferWrite;
 
-        [Ignore] public readonly float[] TextureSources;
+        [Ignore] public float[] TextureSources;
 
         public string Name
         {
@@ -193,7 +193,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             GeoShaderUniforms = new Dictionary<uint, Vector4>();
         }
 
-        private void GenerateUniqueId()
+        public void GenerateUniqueId()
         {
             FNV1a FNV = new FNV1a();
 
@@ -212,6 +212,18 @@ namespace SPICA.Formats.CtrH3D.Model.Material
                 FNV.Hash(TexCoord.Translation.X);
                 FNV.Hash(TexCoord.Translation.Y);
             }
+
+            foreach (PICATexEnvStage Stage in TexEnvStages)
+            {
+                FNV.Hash(Stage.Color.ToUInt32());
+                FNV.Hash(Stage.Combiner.ToUInt32());
+                FNV.Hash(Stage.Operand.ToUInt32());
+                FNV.Hash(Stage.Scale.ToUInt32());
+                FNV.Hash(Stage.Source.ToUInt32());
+                FNV.Hash(Stage.UpdateAlphaBuffer ? 1 : 0);
+                FNV.Hash(Stage.UpdateColorBuffer ? 1 : 0);
+            }
+            FNV.Hash(TexEnvBufferColor.ToUInt32());
 
             FNV.Hash(LightSetIndex);
             FNV.Hash(FogIndex);
